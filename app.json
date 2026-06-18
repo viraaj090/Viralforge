@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "ViralForge",
+    "slug": "viralforge",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "platforms": ["android"],
+    "android": {
+      "package": "com.viraaj090.viralforge",
+      "versionCode": 1
+    }
+  }
+}
