@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta naame="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pexels Video Search</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fontsa.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f11;
+      --surface: #1a1a1f;
+      --surface2: #22222a;
+      --border: #2e2e38;
+      --text: #f0f0f3;
+      --text-muted: #8888a0;
+      --accent: #05a081;
+      --accent-hover: #06b894;
+      --danger: #e74c3c;
+      --radius: 10px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg { display: block; }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      white-space: nowrap;
+    }
+
+    .logo-text span { color: var(--accent); }
+
+    .settings-toggle {
+      margin-left: auto;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color .15s, border-color .15s;
+      white-space: nowrap;
+    }
+
+    .settings-toggle:hover { color: var(--text); border-color: #444; }
+
+    /* ── Settings panel ── */
+    #settings-panel {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      display: none;
+    }
+
+    #settings-panel.open { display: block; }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 640px;
+    }
+
+    .settings-row label {
+      font-size: 13px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    .settings-row input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: var(--radius);
+      padding: 9px 14px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .settings-row input:focus { border-color: var(--accent); }
+    .settings-row input::placeholder { color: var(--text-muted); }
+
+    .btn-save {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 9px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s;
+    }
+
+    .btn-save:hover { background: var(--accent-hover); }
+
+    .api-key-hint {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .api-key-hint a { color: var(--accent); text-decoration: none; }
+    .api-key-hint a:hover { text-decoration: underline; }
+
+    /* ── Main content ── */
+    main { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+
+    /* ── Mode tabs ── */
+    .mode-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px;
+      width: fit-content;
+      margin-bottom: 20px;
+    }
+
+    .mode-tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 7px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: color .15s, background .15s;
+    }
+
+    .mode-tab:hover { color: var(--text); }
+
+    .mode-tab.active {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    /* ── Search panel ── */
+    #search-panel { display: block; }
+    #script-panel { display: none; }
+    #search-panel.hidden { display: none; }
+    #script-panel.visible { display: block; }
+
+    /* ── Search bar ── */
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .search-bar input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: var(--radius);
+      padding: 12px 18px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .search-bar input:focus { border-color: var(--accent); }
+    .search-bar input::placeholder { color: var(--text-muted); }
+
+    .btn-search {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background .15s, opacity .15s;
+      white-space: nowrap;
+    }
+
+    .btn-search:hover { background: var(--accent-hover); }
+    .btn-search:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── Script panel ── */
+    .script-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .script-box-label {
+      padding: 10px 16px 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    #script-input {
+      width: 100%;
+      min-height: 160px;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+      padding: 10px 16px 14px;
+      resize: vertical;
+      outline: none;
+    }
+
+    #script-input::placeholder { color: var(--text-muted); }
+
+    .script-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-extract {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 11px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+      transition: background .15s, opacity .15s;
+      white-space: nowrap;
+    }
+
+    .btn-extract:hover { background: var(--accent-hover); }
+    .btn-extract:disabled { opacity: .5; cursor: not-allowed; }
+
+    .script-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── Keyword chips preview ── */
+    .keyword-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 24px;
+    }
+
+    .kw-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 11px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: default;
+    }
+
+    .kw-chip.done {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(5,160,129,.08);
+    }
+
+    .kw-chip.active {
+      border-color: #fff;
+      color: #fff;
+      background: rgba(255,255,255,.08);
+      animation: pulse .8s ease-in-out infinite alternate;
+    }
+
+    .kw-chip.error {
+      border-color: var(--danger);
+      color: var(--danger);
+      background: rgba(231,76,60,.08);
+    }
+
+    @keyframes pulse { from { opacity: .7; } to { opacity: 1; } }
+
+    /* ── Script progress bar ── */
+    .progress-wrap {
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .progress-wrap.visible { display: block; }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .progress-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width .4s ease;
+      width: 0%;
+    }
+
+    /* ── Status / error ── */
+    #status {
+      text-align: center;
+      padding: 16px;
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    #status.error {
+      display: block;
+      background: rgba(231,76,60,.12);
+      border: 1px solid rgba(231,76,60,.3);
+      color: #e74c3c;
+    }
+
+    #status.info {
+      display: block;
+      background: rgba(5,160,129,.1);
+      border: 1px solid rgba(5,160,129,.25);
+      color: var(--accent);
+    }
+
+    /* ── Results header (search mode) ── */
+    .results-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .results-count {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── Grid ── */
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── Keyword sections (script mode) ── */
+    #sections-container { display: none; }
+    #sections-container.visible { display: block; }
+
+    .kw-section {
+      margin-bottom: 40px;
+    }
+
+    .kw-section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .kw-section-keyword {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .kw-badge {
+      background: rgba(5,160,129,.15);
+      color: var(--accent);
+      border: 1px solid rgba(5,160,129,.3);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .kw-section-sentence {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      font-style: italic;
+      max-width: 600px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .kw-section-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .kw-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .kw-section-loading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .kw-section-empty {
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── Card ── */
+    .video-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: transform .2s, border-color .2s;
+    }
+
+    .video-card:hover {
+      transform: translateY(-3px);
+      border-color: #3a3a48;
+    }
+
+    .thumb-wrap {
+      position: relative;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+      background: var(--surface2);
+      cursor: pointer;
+    }
+
+    .thumb-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .3s;
+    }
+
+    .video-card:hover .thumb-wrap img { transform: scale(1.04); }
+
+    .play-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.35);
+      opacity: 0;
+      transition: opacity .2s;
+    }
+
+    .thumb-wrap:hover .play-overlay { opacity: 1; }
+
+    .play-circle {
+      width: 50px;
+      height: 50px;
+      background: rgba(255,255,255,.2);
+      backdrop-filter: blur(4px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid rgba(255,255,255,.5);
+    }
+
+    .duration-badge {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0,0,0,.7);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      backdrop-filter: blur(4px);
+    }
+
+    .card-body { padding: 12px 14px 14px; }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .card-author {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-res {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--surface2);
+      padding: 2px 7px;
+      border-radius: 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-download {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      margin-top: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 9px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+
+    .btn-download:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-download:disabled { opacity: .5; cursor: not-allowed; }
+
+    .btn-download.downloading {
+      background: rgba(5,160,129,.15);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── Load more (search mode only) ── */
+    .load-more-wrap { text-align: center; margin-top: 32px; }
+
+    .btn-load-more {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: var(--radius);
+      padding: 12px 32px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: border-color .15s, background .15s;
+      display: none;
+    }
+
+    .btn-load-more:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-load-more.visible { display: inline-block; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 64px 20px;
+      color: var(--text-muted);
+      display: none;
+    }
+
+    .empty-state svg { margin-bottom: 16px; opacity: .4; }
+    .empty-state h3 { font-size: 17px; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { font-size: 14px; line-height: 1.6; }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid rgba(255,255,255,.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    .spinner.sm {
+      width: 14px;
+      height: 14px;
+      border-width: 2px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Video modal ── */
+    #modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.85);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #modal.open { display: flex; }
+
+    .modal-inner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      max-width: 860px;
+      width: 100%;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0,0,0,.5);
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: background .15s;
+    }
+
+    .modal-close:hover { background: rgba(0,0,0,.8); }
+
+    #modal-video {
+      width: 100%;
+      display: block;
+      max-height: 70vh;
+      background: #000;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      #grid, .kw-grid { grid-template-columns: 1fr; }
+      .logo-text { font-size: 16px; }
+      .btn-search { padding: 12px 16px; font-size: 14px; }
+      header { gap: 8px; }
+    }
+
+    @media (max-width: 420px) {
+      .settings-row { flex-direction: column; align-items: stretch; }
+      .btn-save { width: 100%; }
+      .kw-section-sentence { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="23 7 16 12 23 17 23 7"/>
+        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+      </svg>
+    </div>
+    <span class="logo-text">Pexels <span>Video</span></span>
+  </div>
+  <button class="settings-toggle" id="settings-btn" aria-label="Settings">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+    API Key
+  </button>
+</header>
+
+<!-- ── Settings panel ── -->
+<div id="settings-panel">
+  <div class="settings-row">
+    <label for="api-key-input">Pexels API Key</label>
+    <input type="password" id="api-key-input" placeholder="Paste your key here…" autocomplete="off" spellcheck="false" />
+    <button class="btn-save" id="save-key-btn">Save</button>
+  </div>
+  <p class="api-key-hint">
+    Get a free API key at <a href="https://www.pexels.com/api/" target="_blank" rel="noopener">pexels.com/api</a>
+  </p>
+</div>
+
+<!-- ── Main ── -->
+<main>
+
+  <!-- Mode tabs -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tab-search" data-mode="search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      Search
+    </button>
+    <button class="mode-tab" id="tab-script" data-mode="script">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/>
+      </svg>
+      Script Mode
+    </button>
+  </div>
+
+  <!-- Search panel -->
+  <div id="search-panel">
+    <div class="search-bar">
+      <input type="search" id="query-input" placeholder="Search videos — nature, city, ocean…" autocomplete="off" />
+      <button class="btn-search" id="search-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Search
+      </button>
+    </div>
+  </div>
+
+  <!-- Script panel -->
+  <div id="script-panel">
+    <div class="script-box">
+      <p class="script-box-label">Your Script</p>
+      <textarea id="script-input" placeholder="Paste your script here. Each sentence will be analysed — 1–2 keywords extracted and searched on Pexels automatically.&#10;&#10;Example: The sun rises over a quiet mountain town. Children laugh as they run through golden fields. A lone astronaut floats silently above the Earth."></textarea>
+    </div>
+    <div class="script-actions">
+      <button class="btn-extract" id="extract-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        Extract &amp; Search
+      </button>
+      <span class="script-hint">Keywords are extracted locally — your script is never sent anywhere.</span>
+    </div>
+
+    <!-- Keyword chips preview -->
+    <div class="keyword-preview" id="keyword-preview"></div>
+
+    <!-- Progress bar -->
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-label">
+        <span id="progress-text">Searching…</span>
+        <span id="progress-frac"></span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+  </div>
+
+  <div id="status"></div>
+
+  <!-- Search mode results -->
+  <div id="results-meta" class="results-meta" style="display:none">
+    <span class="results-count" id="results-count"></span>
+  </div>
+
+  <div id="grid"></div>
+
+  <!-- Script mode sections -->
+  <div id="sections-container"></div>
+
+  <div class="empty-state" id="empty-state">
+    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="23 7 16 12 23 17 23 7"/>
+      <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+    </svg>
+    <h3 id="empty-title">Search for videos</h3>
+    <p id="empty-desc">Enter a topic above and click Search to browse free Pexels videos.</p>
+  </div>
+
+  <div class="load-more-wrap">
+    <button class="btn-load-more" id="load-more-btn">Load more</button>
+  </div>
+</main>
+
+<!-- ── Video modal ── -->
+<div id="modal" role="dialog" aria-modal="true">
+  <div class="modal-inner">
+    <button class="modal-close" id="modal-close-btn" aria-label="Close">&#x2715;</button>
+    <video id="modal-video" controls preload="metadata"></video>
+  </div>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────
+  //  Constants & state
+  // ─────────────────────────────────────────────
+  const API_BASE = 'https://api.pexels.com/videos';
+  const PER_PAGE = 20;
+  const SCRIPT_PER_KW = 6; // videos per keyword section
+
+  let apiKey = localStorage.getItem('pexels_api_key') || '';
+  let currentQuery = '';
+  let currentPage = 1;
+  let totalResults = 0;
+  let loading = false;
+  let currentMode = 'search'; // 'search' | 'script'
+  let extractAbortController = null;
+
+  // ─────────────────────────────────────────────
+  //  DOM refs
+  // ─────────────────────────────────────────────
+  const settingsBtn      = document.getElementById('settings-btn');
+  const settingsPanel    = document.getElementById('settings-panel');
+  const apiKeyInput      = document.getElementById('api-key-input');
+  const saveKeyBtn       = document.getElementById('save-key-btn');
+  const tabSearch        = document.getElementById('tab-search');
+  const tabScript        = document.getElementById('tab-script');
+  const searchPanelEl    = document.getElementById('search-panel');
+  const scriptPanelEl    = document.getElementById('script-panel');
+  const queryInput       = document.getElementById('query-input');
+  const searchBtn        = document.getElementById('search-btn');
+  const scriptInput      = document.getElementById('script-input');
+  const extractBtn       = document.getElementById('extract-btn');
+  const keywordPreview   = document.getElementById('keyword-preview');
+  const progressWrap     = document.getElementById('progress-wrap');
+  const progressText     = document.getElementById('progress-text');
+  const progressFrac     = document.getElementById('progress-frac');
+  const progressFill     = document.getElementById('progress-fill');
+  const statusEl         = document.getElementById('status');
+  const resultsMeta      = document.getElementById('results-meta');
+  const resultsCount     = document.getElementById('results-count');
+  const grid             = document.getElementById('grid');
+  const sectionsContainer = document.getElementById('sections-container');
+  const emptyState       = document.getElementById('empty-state');
+  const emptyTitle       = document.getElementById('empty-title');
+  const emptyDesc        = document.getElementById('empty-desc');
+  const loadMoreBtn      = document.getElementById('load-more-btn');
+  const modal            = document.getElementById('modal');
+  const modalVideo       = document.getElementById('modal-video');
+  const modalCloseBtn    = document.getElementById('modal-close-btn');
+
+  // ─────────────────────────────────────────────
+  //  Init
+  // ─────────────────────────────────────────────
+  if (apiKey) apiKeyInput.value = apiKey;
+  emptyState.style.display = 'block';
+
+  // ─────────────────────────────────────────────
+  //  Settings
+  // ─────────────────────────────────────────────
+  settingsBtn.addEventListener('click', () => {
+    settingsPanel.classList.toggle('open');
+    if (settingsPanel.classList.contains('open')) apiKeyInput.focus();
+  });
+
+  saveKeyBtn.addEventListener('click', () => {
+    const key = apiKeyInput.value.trim();
+    if (!key) { showStatus('Please enter a valid API key.', 'error'); return; }
+    apiKey = key;
+    localStorage.setItem('pexels_api_key', key);
+    settingsPanel.classList.remove('open');
+    showStatus('API key saved!', 'info');
+    setTimeout(hideStatus, 2500);
+  });
+
+  apiKeyInput.addEventListener('keydown', e => { if (e.key === 'Enter') saveKeyBtn.click(); });
+
+  // ─────────────────────────────────────────────
+  //  Mode tabs
+  // ─────────────────────────────────────────────
+  tabSearch.addEventListener('click', () => switchMode('search'));
+  tabScript.addEventListener('click', () => switchMode('script'));
+
+  function switchMode(mode) {
+    currentMode = mode;
+    tabSearch.classList.toggle('active', mode === 'search');
+    tabScript.classList.toggle('active', mode === 'script');
+    searchPanelEl.classList.toggle('hidden', mode !== 'search');
+    scriptPanelEl.classList.toggle('visible', mode === 'script');
+
+    // Reset result areas
+    grid.innerHTML = '';
+    sectionsContainer.innerHTML = '';
+    sectionsContainer.classList.remove('visible');
+    resultsMeta.style.display = 'none';
+    loadMoreBtn.classList.remove('visible');
+    hideStatus();
+    emptyState.style.display = 'block';
+
+    if (mode === 'search') {
+      emptyTitle.textContent = 'Search for videos';
+      emptyDesc.textContent = 'Enter a topic above and click Search to browse free Pexels videos.';
+      keywordPreview.innerHTML = '';
+      progressWrap.classList.remove('visible');
+    } else {
+      emptyTitle.textContent = 'Paste a script above';
+      emptyDesc.textContent = 'Click "Extract & Search" to find Pexels videos matched to each sentence.';
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  //  Search mode
+  // ─────────────────────────────────────────────
+  searchBtn.addEventListener('click', doSearch);
+  queryInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+  function doSearch() {
+    const q = queryInput.value.trim();
+    if (!q) { queryInput.focus(); return; }
+    if (!apiKey) {
+      settingsPanel.classList.add('open');
+      apiKeyInput.focus();
+      showStatus('Please save your Pexels API key first.', 'error');
+      return;
+    }
+    currentQuery = q;
+    currentPage = 1;
+    grid.innerHTML = '';
+    sectionsContainer.classList.remove('visible');
+    loadMoreBtn.classList.remove('visible');
+    resultsMeta.style.display = 'none';
+    fetchVideos(true);
+  }
+
+  loadMoreBtn.addEventListener('click', () => {
+    currentPage++;
+    fetchVideos(false);
+  });
+
+  async function fetchVideos(fresh) {
+    if (loading) return;
+    loading = true;
+    setSearchLoading(true);
+    hideStatus();
+    emptyState.style.display = 'none';
+
+    try {
+      const url = `${API_BASE}/search?query=${encodeURIComponent(currentQuery)}&per_page=${PER_PAGE}&page=${currentPage}`;
+      const res = await fetch(url, { headers: { Authorization: apiKey } });
+
+      if (res.status === 401) throw new Error('Invalid API key. Check your Pexels key in settings.');
+      if (res.status === 429) throw new Error('Rate limit reached. Please wait a moment and try again.');
+      if (!res.ok) throw new Error(`API error ${res.status}: ${res.statusText}`);
+
+      const data = await res.json();
+      totalResults = data.total_results;
+
+      if (fresh && data.videos.length === 0) {
+        emptyTitle.textContent = 'No videos found';
+        emptyDesc.textContent = `No Pexels videos matched "${currentQuery}". Try a different search term.`;
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      renderCards(data.videos, grid);
+      resultsCount.textContent = `${totalResults.toLocaleString()} videos for "${currentQuery}"`;
+      resultsMeta.style.display = 'flex';
+
+      if (currentPage * PER_PAGE < totalResults) loadMoreBtn.classList.add('visible');
+      else loadMoreBtn.classList.remove('visible');
+    } catch (err) {
+      showStatus(err.message || 'Something went wrong. Please try again.', 'error');
+      if (fresh) {
+        emptyTitle.textContent = 'Search failed';
+        emptyDesc.textContent = 'Fix the error above and try again.';
+        emptyState.style.display = 'block';
+      }
+    } finally {
+      loading = false;
+      setSearchLoading(false);
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  //  Language detection
+  // ─────────────────────────────────────────────
+  function isHindi(text) {
+    // Count Devanagari chars (U+0900–U+097F) vs total non-whitespace
+    const nonWS = text.replace(/\s/g, '');
+    if (!nonWS.length) return false;
+    const deva = (text.match(/[\u0900-\u097F]/g) || []).length;
+    return deva / nonWS.length > 0.25;
+  }
+
+  // ─────────────────────────────────────────────
+  //  English stop words
+  // ─────────────────────────────────────────────
+  const STOP_WORDS = new Set([
+    'a','an','the','and','or','but','in','on','at','to','for','of','with',
+    'by','from','up','about','into','through','during','before','after',
+    'above','below','between','out','off','over','under','again','further',
+    'then','once','here','there','when','where','why','how','all','both',
+    'each','few','more','most','other','some','such','no','nor','not',
+    'only','own','same','so','than','too','very','can','will','just',
+    'should','now','as','is','are','was','were','be','been','being',
+    'have','has','had','do','does','did','it','its','they','them','their',
+    'this','that','these','those','i','me','my','we','us','our','you',
+    'your','he','him','his','she','her','what','which','who','whom',
+    'would','could','may','might','shall','must','am','s','re','ve','ll',
+    'while','although','even','ever','every','already','still','yet',
+    'across','along','around','behind','beside','beyond','inside','outside',
+    'since','until','upon','within','without','because','however','though',
+    'also','like','get','go','take','make','let','see','look','come','know',
+    'think','say','tell','give','find','feel','become','leave','keep','seem',
+    'put','bring','begin','show','hear','play','run','move','live','believe',
+    'hold','write','sit','stand','lose','pay','meet','include','continue',
+    'set','learn','change','lead','understand','watch','follow','stop',
+    'create','speak','read','spend','grow','open','walk','win','offer',
+    'remember','love','consider','appear','buy','wait','serve','die','send',
+    'remain','fall','happen','exist','provide','head','call','stay','point',
+    'turn','start','raise','pass','reach','choose','break','cut',
+    'new','old','first','last','long','great','little','own','right','big',
+    'high','small','large','next','early','young','important','public',
+    'bad','same','able','good','best','free','real','far','away','true',
+    'got','getting','lot','always','never','much','many','thing',
+    'one','two','three','four','five','six','seven','eight','nine','ten',
+    'time','year','day','way','work','world','life','hand','part','place',
+    'case','week','company','system','program','question','government',
+    'night','point','home','water','room','mother','area','money','story',
+    'fact','month','right','study','book','eye','job','word','business',
+    'issue','side','kind','house','yes','because','use','want'
+  ]);
+
+  // ─────────────────────────────────────────────
+  //  Hindi stop words (grammatical / function words)
+  // ─────────────────────────────────────────────
+  const HINDI_STOP = new Set([
+    'है','हैं','था','थी','थे','हो','हुआ','हुई','हुए','होना','होती','होते',
+    'का','की','के','में','पर','से','को','ने','द्वारा','तक','भी','ही','तो',
+    'और','या','लेकिन','परंतु','किंतु','मगर','इसलिए','क्योंकि','अगर','जब',
+    'यह','वह','ये','वे','मैं','हम','तुम','आप','वो','इस','उस','इन','उन',
+    'जो','कि','कब','क्यों','कहाँ','कैसे','कौन','क्या','कोई','सब','सभी',
+    'बहुत','अधिक','कम','थोड़ा','ज्यादा','अब','फिर','तब','यहाँ','वहाँ',
+    'नहीं','मत','मत','बिना','साथ','बाद','पहले','ऊपर','नीचे','अंदर','बाहर',
+    'एक','दो','तीन','चार','पाँच','दस','सौ','हजार',
+    'आ','जा','कर','हो','ले','दे','लो','दो','रहा','रही','रहे',
+    'करना','करते','करती','किया','की','करें','करो',
+    'जाना','जाता','जाती','गया','गई','गए',
+    'आना','आता','आती','आया','आई','आए',
+    'लेना','लेता','ली','लिया','लिए',
+    'देना','देता','देती','दिया','दी','दिए',
+    'रखना','रखता','रखती','रखा','रखी',
+    'होना','होता','होती','हुआ','हुई','हुए',
+    'पड़ना','पड़ता','पड़ी','पड़ा',
+    'इसमें','उसमें','इसको','उसको','इससे','उससे','इसका','उसका','इसकी','उसकी',
+    'हर','कुछ','किसी','किसका','सारा','सारी',
+    'ना','नहीं','बिल्कुल','शायद','जरूर','जरूरी',
+    'वाला','वाली','वाले','वाला'
+  ]);
+
+  // ─────────────────────────────────────────────
+  //  Hindi → English dictionary
+  //  Covers: food, cooking, nature, people, animals,
+  //          places, objects, emotions, colours, actions-as-nouns
+  // ─────────────────────────────────────────────
+  const HINDI_EN = {
+    // ── Food & ingredients ──
+    'दाल':'lentils','दाल-चावल':'lentils rice','चावल':'rice','रोटी':'flatbread',
+    'नान':'naan bread','परांठा':'flatbread','पूरी':'fried bread','इडली':'idli',
+    'डोसा':'dosa','खिचड़ी':'khichdi','बिरयानी':'biryani','पुलाव':'rice pilaf',
+    'पनीर':'cottage cheese','दही':'yogurt','मक्खन':'butter','घी':'clarified butter',
+    'तेल':'oil','नमक':'salt','चीनी':'sugar','शहद':'honey','दूध':'milk',
+    'क्रीम':'cream','छाछ':'buttermilk','लस्सी':'lassi',
+    'प्याज':'onion','लहसुन':'garlic','अदरक':'ginger','टमाटर':'tomato',
+    'आलू':'potato','गोभी':'cauliflower','पालक':'spinach','मटर':'peas',
+    'बैंगन':'eggplant','भिंडी':'okra','करेला':'bitter gourd','तोरई':'zucchini',
+    'मूली':'radish','गाजर':'carrot','शलजम':'turnip','कद्दू':'pumpkin',
+    'लौकी':'bottle gourd','मेथी':'fenugreek','धनिया':'coriander',
+    'पुदीना':'mint','तुलसी':'basil','हल्दी':'turmeric','जीरा':'cumin',
+    'सरसों':'mustard','अजवाइन':'carom seeds','इलायची':'cardamom',
+    'दालचीनी':'cinnamon','लौंग':'cloves','काली मिर्च':'black pepper',
+    'मिर्च':'chili','लाल मिर्च':'red chili','हरी मिर्च':'green chili',
+    'मसाला':'spice','गरम मसाला':'garam masala','करी':'curry',
+    'सब्जी':'vegetables','साग':'greens','फल':'fruit','सेब':'apple',
+    'केला':'banana','आम':'mango','अनार':'pomegranate','अंगूर':'grapes',
+    'संतरा':'orange','नींबू':'lemon','नारियल':'coconut','खजूर':'dates',
+    'बादाम':'almond','काजू':'cashew','मूँगफली':'peanut','तिल':'sesame',
+    'गेहूँ':'wheat','आटा':'flour','मैदा':'flour','बेसन':'chickpea flour',
+    'चना':'chickpea','राजमा':'kidney beans','सोयाबीन':'soybean',
+    'मांस':'meat','चिकन':'chicken','मुर्गी':'chicken','मछली':'fish',
+    'अंडा':'egg','झींगा':'shrimp','खाना':'food','भोजन':'meal',
+    'नाश्ता':'breakfast','दोपहर':'lunch','रात का खाना':'dinner',
+    'मिठाई':'sweets','हलवा':'halwa','खीर':'rice pudding','जलेबी':'jalebi',
+    'बर्फी':'barfi sweet','लड्डू':'ladoo','गुलाब जामुन':'gulab jamun',
+    'चाय':'tea','कॉफी':'coffee','जूस':'juice','पानी':'water','शरबत':'sherbet',
+
+    // ── Kitchen & cooking ──
+    'रसोई':'kitchen','चूल्हा':'stove','तवा':'griddle','कड़ाही':'wok',
+    'बर्तन':'utensil','थाली':'plate','कटोरी':'bowl','गिलास':'glass',
+    'छुरी':'knife','चम्मच':'spoon','कलछी':'ladle',
+    'पकाना':'cooking','तलना':'frying','उबालना':'boiling',
+    'भूनना':'roasting','मिलाना':'mixing',
+
+    // ── Nature ──
+    'पहाड़':'mountain','पर्वत':'mountain','हिमालय':'himalaya','चोटी':'peak',
+    'नदी':'river','झील':'lake','समुद्र':'ocean','सागर':'sea','तट':'beach',
+    'जंगल':'forest','वन':'forest','पेड़':'tree','पौधा':'plant','घास':'grass',
+    'फूल':'flower','पत्ता':'leaf','बीज':'seed','फसल':'harvest','खेत':'field',
+    'आकाश':'sky','बादल':'cloud','धूप':'sunshine','छाया':'shadow',
+    'बारिश':'rain','वर्षा':'rain','बाढ़':'flood','तूफान':'storm',
+    'बर्फ':'snow','ओला':'hail','धुंध':'fog','ओस':'dew',
+    'सूरज':'sun','चाँद':'moon','सितारा':'star','आग':'fire','धुआँ':'smoke',
+    'हवा':'wind','मिट्टी':'soil','पत्थर':'rock','रेत':'sand','कीचड़':'mud',
+    'झरना':'waterfall','चट्टान':'cliff','मैदान':'plain','घाटी':'valley',
+    'सूर्योदय':'sunrise','सूर्यास्त':'sunset','सुबह':'morning','शाम':'evening',
+    'रात':'night','दिन':'day','मौसम':'weather','ऋतु':'season',
+
+    // ── Animals ──
+    'गाय':'cow','बैल':'bull','भैंस':'buffalo','बकरी':'goat','भेड़':'sheep',
+    'घोड़ा':'horse','हाथी':'elephant','शेर':'lion','बाघ':'tiger',
+    'भालू':'bear','हिरण':'deer','बंदर':'monkey','सांप':'snake',
+    'मगरमच्छ':'crocodile','मछली':'fish','पक्षी':'bird','मोर':'peacock',
+    'तोता':'parrot','कोयल':'cuckoo','उल्लू':'owl','बाज':'eagle',
+    'कुत्ता':'dog','बिल्ली':'cat','चूहा':'mouse','खरगोश':'rabbit',
+    'मुर्गा':'rooster','मुर्गी':'hen','तितली':'butterfly','मधुमक्खी':'bee',
+
+    // ── People & relationships ──
+    'माँ':'mother','माता':'mother','बाप':'father','पिता':'father',
+    'भाई':'brother','बहन':'sister','दादा':'grandfather','दादी':'grandmother',
+    'नाना':'maternal grandfather','नानी':'maternal grandmother',
+    'बेटा':'son','बेटी':'daughter','परिवार':'family','बच्चा':'child',
+    'बच्चे':'children','दोस्त':'friend','पड़ोसी':'neighbor',
+    'गुरु':'teacher','शिक्षक':'teacher','डॉक्टर':'doctor','किसान':'farmer',
+    'व्यापारी':'merchant','कारीगर':'craftsman','मजदूर':'worker',
+    'लोग':'people','आदमी':'man','औरत':'woman','लड़का':'boy','लड़की':'girl',
+
+    // ── Places & settings ──
+    'घर':'house','मकान':'house','गाँव':'village','शहर':'city','नगर':'town',
+    'बाजार':'market','दुकान':'shop','मंदिर':'temple','मस्जिद':'mosque',
+    'चर्च':'church','स्कूल':'school','विद्यालय':'school','कॉलेज':'college',
+    'अस्पताल':'hospital','सड़क':'road','गली':'street','पुल':'bridge',
+    'बंदरगाह':'harbor','हवाई अड्डा':'airport','रेलवे स्टेशन':'train station',
+    'खेत':'field','बगीचा':'garden','पार्क':'park','जंगल':'forest',
+    'पहाड़':'mountain','समुद्र तट':'beach','रेगिस्तान':'desert',
+
+    // ── Objects & things ──
+    'किताब':'book','कागज':'paper','कलम':'pen','फोन':'phone','कंप्यूटर':'computer',
+    'गाड़ी':'car','बस':'bus','ट्रेन':'train','साइकिल':'bicycle','नाव':'boat',
+    'जहाज':'ship','विमान':'airplane','कपड़ा':'cloth','साड़ी':'saree',
+    'कुर्ता':'kurta','लहंगा':'skirt','शाल':'shawl','जूता':'shoe',
+    'घड़ी':'watch','दर्पण':'mirror','दीपक':'lamp','मोमबत्ती':'candle',
+    'टोकरी':'basket','बोरा':'sack','छाता':'umbrella','लाठी':'stick',
+    'तलवार':'sword','ढाल':'shield','झंडा':'flag','पैसा':'money','सोना':'gold',
+    'चाँदी':'silver','हीरा':'diamond','माला':'garland','खिलौना':'toy',
+    'रंग':'color','चित्र':'painting','संगीत':'music','नृत्य':'dance',
+
+    // ── Emotions & states ──
+    'खुशी':'happiness','दुख':'sadness','प्यार':'love','नफरत':'hatred',
+    'डर':'fear','साहस':'courage','शांति':'peace','युद्ध':'war',
+    'दर्द':'pain','आराम':'rest','थकान':'tiredness','भूख':'hunger',
+    'प्यास':'thirst','नींद':'sleep','सपना':'dream','आशा':'hope',
+    'विश्वास':'trust','जीत':'victory','हार':'defeat',
+
+    // ── Descriptive nouns (useful for b-roll) ──
+    'धुआँ':'smoke','आग':'fire','लौ':'flame','अंधेरा':'darkness',
+    'रोशनी':'light','छाया':'shadow','परछाईं':'silhouette',
+    'भीड़':'crowd','यात्रा':'journey','रास्ता':'path','मंजिल':'destination',
+    'सफलता':'success','जीवन':'life','मृत्यु':'death','जन्म':'birth',
+    'बचपन':'childhood','जवानी':'youth','बुढ़ापा':'old age',
+    'समय':'time','इतिहास':'history','संस्कृति':'culture','परंपरा':'tradition'
+  };
+
+  // ─────────────────────────────────────────────
+  //  Sentence splitting (handles English . ! ? and Hindi ।)
+  // ─────────────────────────────────────────────
+  function splitIntoSentences(text) {
+    const raw = text.match(/[^.!?…।]+[.!?…।]*/g) || [text];
+    return raw.map(s => s.trim()).filter(s => s.length > 2);
+  }
+
+  // ─────────────────────────────────────────────
+  //  Keyword extraction — dispatches by language
+  // ─────────────────────────────────────────────
+  function extractKeywords(sentence, maxKw = 2, hint = 'en') {
+    return hint === 'hi'
+      ? extractHindiKeywords(sentence, maxKw)
+      : extractEnglishKeywords(sentence, maxKw);
+  }
+
+  function extractEnglishKeywords(sentence, maxKw) {
+    const words = sentence
+      .toLowerCase()
+      .replace(/[^a-z\s'-]/g, ' ')
+      .split(/\s+/)
+      .map(w => w.replace(/^['-]+|['-]+$/g, ''))
+      .filter(w => w.length > 2 && !STOP_WORDS.has(w));
+    if (!words.length) return [];
+    const unique = [...new Set(words)];
+    const scored = unique.map((w, i) => ({ word: w, score: w.length * 1.5 - i * 0.3 }));
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, maxKw).map(s => s.word);
+  }
+
+  function extractHindiKeywords(sentence, maxKw) {
+    // Tokenize by whitespace; strip trailing virama/punctuation
+    const tokens = sentence
+      .split(/[\s,،؍।!\?]+/)
+      .map(t => t.replace(/[\u0964\u0965\u200c\u200d\u00b7\.]+$/g, '').trim())
+      .filter(Boolean);
+
+    const results = [];
+    const seen = new Set();
+
+    // Strategy 1: multi-word dictionary lookup (longer phrases first)
+    for (let len = 3; len >= 1; len--) {
+      for (let i = 0; i <= tokens.length - len; i++) {
+        const phrase = tokens.slice(i, i + len).join(' ');
+        if (HINDI_EN[phrase] && !seen.has(phrase)) {
+          results.push({ hindi: phrase, en: HINDI_EN[phrase], pos: i });
+          for (let j = i; j < i + len; j++) seen.add(tokens[j]);
+        }
+      }
+    }
+
+    // Sort by position in sentence (earlier = more topic-setting)
+    results.sort((a, b) => a.pos - b.pos);
+
+    // Take top maxKw unique English translations
+    const enWords = [];
+    const enSeen = new Set();
+    for (const r of results) {
+      const enTokens = r.en.split(' ');
+      for (const et of enTokens) {
+        if (!enSeen.has(et)) { enSeen.add(et); enWords.push(et); }
+      }
+      if (enWords.length >= maxKw) break;
+    }
+
+    // Fallback: if dictionary misses everything, romanize remaining tokens lightly
+    if (!enWords.length) {
+      const unknowns = tokens.filter(t =>
+        !HINDI_STOP.has(t) &&
+        /[\u0900-\u097F]/.test(t) &&
+        t.length > 1
+      ).slice(0, maxKw);
+      // Can't translate unknowns — return empty so section is skipped gracefully
+      return [];
+    }
+
+    return enWords.slice(0, maxKw);
+  }
+
+  // ─────────────────────────────────────────────
+  //  Deduplicate across sentences
+  // ─────────────────────────────────────────────
+  function deduplicateKeywords(kwGroups) {
+    const seen = new Set();
+    return kwGroups.map(group => {
+      const fresh = group.keywords.filter(kw => {
+        if (seen.has(kw)) return false;
+        seen.add(kw);
+        return true;
+      });
+      return { ...group, keywords: fresh };
+    }).filter(g => g.keywords.length > 0);
+  }
+
+  // ─────────────────────────────────────────────
+  //  Script mode — Extract & Search
+  // ─────────────────────────────────────────────
+  extractBtn.addEventListener('click', doExtractAndSearch);
+
+  async function doExtractAndSearch() {
+    const text = scriptInput.value.trim();
+    if (!text) { scriptInput.focus(); return; }
+    if (!apiKey) {
+      settingsPanel.classList.add('open');
+      apiKeyInput.focus();
+      showStatus('Please save your Pexels API key first.', 'error');
+      return;
+    }
+
+    // Abort any in-progress extraction
+    if (extractAbortController) extractAbortController.abort();
+    extractAbortController = new AbortController();
+    const signal = extractAbortController.signal;
+
+    // Detect language once for the whole script
+    const langHint = isHindi(text) ? 'hi' : 'en';
+
+    // Parse sentences → keywords
+    const sentences = splitIntoSentences(text);
+    if (!sentences.length) {
+      showStatus('Could not find any sentences in the script.', 'error');
+      return;
+    }
+
+    const rawGroups = sentences.map(s => ({
+      sentence: s,
+      keywords: extractKeywords(s, 2, langHint)
+    }));
+
+    const groups = deduplicateKeywords(rawGroups);
+
+    if (!groups.length) {
+      showStatus('Could not extract meaningful keywords. Try a more descriptive script.', 'error');
+      return;
+    }
+
+    // Reset UI
+    hideStatus();
+    grid.innerHTML = '';
+    sectionsContainer.innerHTML = '';
+    sectionsContainer.classList.add('visible');
+    resultsMeta.style.display = 'none';
+    loadMoreBtn.classList.remove('visible');
+    emptyState.style.display = 'none';
+    keywordPreview.innerHTML = '';
+
+    // Render keyword chips
+    const chips = {};
+    groups.forEach(g => {
+      g.keywords.forEach(kw => {
+        const chip = document.createElement('span');
+        chip.className = 'kw-chip';
+        chip.id = `chip-${kw}`;
+        chip.innerHTML = `<span>${kw}</span>`;
+        keywordPreview.appendChild(chip);
+        chips[kw] = chip;
+      });
+    });
+
+    // Progress
+    const total = groups.reduce((n, g) => n + g.keywords.length, 0);
+    let done = 0;
+    progressWrap.classList.add('visible');
+    setProgress(0, total);
+
+    // Create section placeholders
+    const sectionEls = {};
+    groups.forEach(g => {
+      g.keywords.forEach(kw => {
+        const sec = document.createElement('div');
+        sec.className = 'kw-section';
+        sec.id = `section-${kw}`;
+        sec.innerHTML = `
+          <div class="kw-section-header">
+            <div class="kw-section-keyword">
+              <span class="kw-badge">keyword</span>
+              ${escHtml(kw)}
+            </div>
+            <span class="kw-section-sentence">"${escHtml(g.sentence)}"</span>
+            <span class="kw-section-count" id="count-${kw}"></span>
+          </div>
+          <div class="kw-section-loading" id="loading-${kw}">
+            <div class="spinner sm"></div>
+            <span>Searching Pexels…</span>
+          </div>
+          <div class="kw-grid" id="grid-${kw}"></div>
+        `;
+        sectionsContainer.appendChild(sec);
+        sectionEls[kw] = sec;
+      });
+    });
+
+    // Search each keyword sequentially (avoid hammering the API)
+    for (const g of groups) {
+      for (const kw of g.keywords) {
+        if (signal.aborted) break;
+
+        chips[kw].classList.add('active');
+
+        try {
+          const url = `${API_BASE}/search?query=${encodeURIComponent(kw)}&per_page=${SCRIPT_PER_KW}&page=1`;
+          const res = await fetch(url, { headers: { Authorization: apiKey }, signal });
+
+          if (res.status === 429) {
+            // Back off and retry once
+            await sleep(2000);
+            if (signal.aborted) break;
+            const retry = await fetch(url, { headers: { Authorization: apiKey }, signal });
+            if (!retry.ok) throw new Error(`Rate limited for "${kw}"`);
+            var data = await retry.json();
+          } else if (!res.ok) {
+            throw new Error(`API error ${res.status}`);
+          } else {
+            var data = await res.json();
+          }
+
+          const loadingEl = document.getElementById(`loading-${kw}`);
+          const kwGrid    = document.getElementById(`grid-${kw}`);
+          const countEl   = document.getElementById(`count-${kw}`);
+          if (loadingEl) loadingEl.remove();
+
+          if (!data.videos || data.videos.length === 0) {
+            if (kwGrid) kwGrid.innerHTML = `<div class="kw-section-empty">No videos found for "${escHtml(kw)}"</div>`;
+            chips[kw].classList.remove('active');
+            chips[kw].classList.add('error');
+          } else {
+            if (kwGrid) renderCards(data.videos, kwGrid);
+            if (countEl) countEl.textContent = `${data.total_results.toLocaleString()} results`;
+            chips[kw].classList.remove('active');
+            chips[kw].classList.add('done');
+          }
+        } catch (err) {
+          if (err.name === 'AbortError') break;
+          const loadingEl = document.getElementById(`loading-${kw}`);
+          const kwGrid    = document.getElementById(`grid-${kw}`);
+          if (loadingEl) loadingEl.remove();
+          if (kwGrid) kwGrid.innerHTML = `<div class="kw-section-empty">Search failed for "${escHtml(kw)}"</div>`;
+          chips[kw].classList.remove('active');
+          chips[kw].classList.add('error');
+        }
+
+        done++;
+        setProgress(done, total);
+
+        // Small delay between requests to respect rate limits
+        if (done < total && !signal.aborted) await sleep(300);
+      }
+      if (signal.aborted) break;
+    }
+
+    progressText.textContent = signal.aborted ? 'Cancelled' : 'Done!';
+    extractBtn.disabled = false;
+    extractBtn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+      Extract &amp; Search`;
+  }
+
+  function setProgress(done, total) {
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    progressFill.style.width = pct + '%';
+    progressFrac.textContent = `${done} / ${total}`;
+    if (done < total) {
+      progressText.textContent = 'Searching…';
+      extractBtn.disabled = true;
+      extractBtn.innerHTML = `<div class="spinner"></div> Searching…`;
+    } else {
+      extractBtn.disabled = false;
+      extractBtn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        Extract &amp; Search`;
+    }
+  }
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // ─────────────────────────────────────────────
+  //  Shared: render video cards
+  // ─────────────────────────────────────────────
+  function renderCards(videos, container) {
+    videos.forEach(v => {
+      const thumb = v.image || (v.video_pictures?.[0]?.picture) || '';
+      const best  = bestFile(v.video_files);
+      const dur   = formatDur(v.duration);
+      const res   = best ? `${best.width}×${best.height}` : '';
+      const title = v.url.split('/').filter(Boolean).pop()?.replace(/-/g,' ') || 'Untitled';
+
+      const card = document.createElement('div');
+      card.className = 'video-card';
+      card.innerHTML = `
+        <div class="thumb-wrap">
+          <img src="${thumb}" alt="${escHtml(title)}" loading="lazy" />
+          <div class="play-overlay">
+            <div class="play-circle">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+          </div>
+          ${dur ? `<span class="duration-badge">${dur}</span>` : ''}
+        </div>
+        <div class="card-body">
+          <div class="card-title">${escHtml(title)}</div>
+          <div class="card-meta">
+            <span class="card-author">${escHtml(v.user?.name || 'Unknown')}</span>
+            ${res ? `<span class="card-res">${res}</span>` : ''}
+          </div>
+          <button class="btn-download" data-url="${best?.link || ''}" data-filename="pexels-${v.id}.mp4">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download
+          </button>
+        </div>
+      `;
+
+      card.querySelector('.thumb-wrap').addEventListener('click', () => {
+        const url = best?.link;
+        if (!url) return;
+        modalVideo.src = url;
+        modal.classList.add('open');
+        modalVideo.play().catch(() => {});
+      });
+
+      card.querySelector('.btn-download').addEventListener('click', function() {
+        downloadVideo(this.dataset.url, this.dataset.filename, this);
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  //  Download
+  // ─────────────────────────────────────────────
+  async function downloadVideo(url, filename, btn) {
+    if (!url || btn.disabled) return;
+    btn.disabled = true;
+    btn.classList.add('downloading');
+    const orig = btn.innerHTML;
+    btn.innerHTML = `<div class="spinner"></div> Downloading…`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Fetch failed');
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Downloaded`;
+      setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; btn.classList.remove('downloading'); }, 3000);
+    } catch {
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.target = '_blank';
+      document.body.appendChild(a); a.click(); a.remove();
+      btn.innerHTML = orig; btn.disabled = false; btn.classList.remove('downloading');
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  //  Modal
+  // ─────────────────────────────────────────────
+  modalCloseBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  function closeModal() {
+    modal.classList.remove('open');
+    modalVideo.pause();
+    modalVideo.src = '';
+  }
+
+  // ─────────────────────────────────────────────
+  //  Helpers
+  // ─────────────────────────────────────────────
+  function bestFile(files = []) {
+    if (!files.length) return null;
+    const hd = files.filter(f => f.quality === 'hd').sort((a, b) => (b.width || 0) - (a.width || 0));
+    const sd = files.filter(f => f.quality === 'sd').sort((a, b) => (b.width || 0) - (a.width || 0));
+    return hd[0] || sd[0] || files[0];
+  }
+
+  function formatDur(s) {
+    if (!s) return '';
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  }
+
+  function escHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  function showStatus(msg, type) {
+    statusEl.textContent = msg;
+    statusEl.className = type;
+  }
+
+  function hideStatus() { statusEl.className = ''; statusEl.textContent = ''; }
+
+  function setSearchLoading(on) {
+    searchBtn.disabled = on;
+    searchBtn.innerHTML = on
+      ? `<div class="spinner"></div> Searching…`
+      : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search`;
+  }
+</script>
+</body>
+</html>
+
