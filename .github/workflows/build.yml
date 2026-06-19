@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -31,12 +31,13 @@ jobs:
           npx cap init ViralForge com.viraaj090.viralforge --web-dir www
           npx cap add android
 
-      - name: Build APK
+      - - name: Build APK
         run: |
           cd android
           chmod +x gradlew
+          ./gradlew wrapper --gradle-version=8.3
           ./gradlew assembleDebug
-
+          
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
