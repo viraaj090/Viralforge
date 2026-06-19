@@ -27,7 +27,8 @@ jobs:
       - name: Install Capacitor
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init ViralForge com.viraaj090.viralforge --web-dir .
+          mkdir www && cp index.html www/
+          npx cap init ViralForge com.viraaj090.viralforge --web-dir www
           npx cap add android
 
       - name: Build APK
