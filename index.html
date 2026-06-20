@@ -1283,6 +1283,364 @@
       .ed-filename { max-width: 100px; }
     }
 
+    /* ══════════════════════════════════════════
+       VIDEO EDITOR MODAL
+    ══════════════════════════════════════════ */
+    #veditor-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 3500;
+      background: #08080c;
+      flex-direction: column;
+    }
+
+    #veditor-modal.open { display: flex; }
+
+    .ved-topbar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 14px;
+      background: #13131a;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .ved-body {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .ved-preview-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .ved-video-wrap {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      overflow: hidden;
+    }
+
+    #ved-video {
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+    }
+
+    #ved-text-canvas {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      pointer-events: none;
+    }
+
+    #ved-text-canvas.interactive { pointer-events: auto; cursor: crosshair; }
+
+    .ved-controls {
+      background: #13131a;
+      border-top: 1px solid var(--border);
+      padding: 10px 14px;
+      flex-shrink: 0;
+    }
+
+    /* ── Trim bar ── */
+    .trim-time-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .trim-time-row span:first-child { color: var(--accent); font-weight: 700; }
+
+    .trim-bar-outer {
+      position: relative;
+      height: 38px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #1c1c25;
+      cursor: pointer;
+      margin-bottom: 10px;
+      user-select: none;
+    }
+
+    .trim-inactive-left, .trim-inactive-right {
+      position: absolute;
+      top: 0; bottom: 0;
+      background: rgba(0,0,0,.5);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .trim-active-border {
+      position: absolute;
+      top: 0; bottom: 0;
+      border-top: 2.5px solid var(--accent);
+      border-bottom: 2.5px solid var(--accent);
+      background: rgba(249,115,22,.1);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .trim-waveform {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      gap: 1px;
+      padding: 4px 8px;
+    }
+
+    .trim-wave-bar {
+      flex: 1;
+      border-radius: 1px;
+      background: rgba(249,115,22,.35);
+    }
+
+    .trim-handle-btn {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 14px;
+      background: var(--accent);
+      cursor: ew-resize;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: rgba(255,255,255,.8);
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .trim-handle-btn::after { content: '⋮⋮'; }
+    #vh-start { border-radius: 4px 0 0 4px; left: 0; }
+    #vh-end   { border-radius: 0 4px 4px 0; right: 0; }
+
+    .trim-playhead {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: #fff;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    /* ── Playback row ── */
+    .ved-pb-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .ved-pb-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 7px;
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: color .15s, background .15s;
+      white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .ved-pb-btn:hover { color: var(--text); }
+
+    .ved-vol-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ved-vol-row label { font-size: 11px; color: var(--text-muted); }
+    .ved-vol-row input[type=range] { width: 70px; accent-color: var(--accent); }
+
+    .ved-speed-btns { margin-left: auto; display: flex; gap: 4px; }
+
+    .ved-speed-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 5px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: color .15s, background .15s;
+    }
+
+    .ved-speed-btn:hover { color: var(--text); }
+    .ved-speed-btn.active { background: var(--accent-dim); border-color: var(--accent-border); color: var(--accent); }
+
+    /* ── Right panel ── */
+    .ved-panel {
+      width: 240px;
+      background: #13131a;
+      border-left: 1px solid var(--border);
+      overflow-y: auto;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ved-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .ved-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 10px 4px;
+      cursor: pointer;
+      transition: color .15s;
+    }
+
+    .ved-tab:hover { color: var(--text); }
+    .ved-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .ved-tab-panel { display: none; padding: 12px; }
+    .ved-tab-panel.active { display: block; }
+
+    /* text items list */
+    .ved-text-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+
+    .ved-text-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+
+    .ved-text-item:hover { border-color: #555; }
+    .ved-text-item.selected { border-color: var(--accent); background: var(--accent-dim); }
+
+    .ved-text-item-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .ved-text-item-del {
+      background: none; border: none; color: var(--text-muted);
+      cursor: pointer; font-size: 13px; padding: 0;
+      transition: color .15s;
+    }
+
+    .ved-text-item-del:hover { color: var(--danger); }
+
+    .ved-add-text-form { margin-top: 8px; }
+
+    .ved-text-input-field {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      margin-bottom: 7px;
+      transition: border-color .15s;
+    }
+
+    .ved-text-input-field:focus { border-color: var(--accent); }
+    .ved-text-input-field::placeholder { color: var(--text-muted); }
+
+    .ved-btn-add-text {
+      width: 100%;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent-border);
+      color: var(--accent);
+      border-radius: 7px;
+      padding: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background .15s;
+    }
+
+    .ved-btn-add-text:hover { background: rgba(249,115,22,.2); }
+
+    /* Timeline clip edit btn */
+    .tl-clip-edit {
+      position: absolute;
+      bottom: 26px;
+      right: 4px;
+      background: rgba(124,58,237,.8);
+      border: none;
+      color: #fff;
+      border-radius: 4px;
+      padding: 2px 5px;
+      font-size: 9px;
+      font-weight: 700;
+      cursor: pointer;
+      z-index: 2;
+      transition: background .15s;
+      font-family: 'Inter', sans-serif;
+      white-space: nowrap;
+    }
+
+    .tl-clip-edit:hover { background: rgba(124,58,237,1); }
+
+    /* Export overlay in video editor */
+    .ved-export-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.82);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      z-index: 10;
+    }
+
+    .ved-export-overlay.visible { display: flex; }
+
+    .ved-export-label { font-size: 14px; font-weight: 600; color: var(--text); }
+    .ved-export-sub { font-size: 12px; color: var(--text-muted); }
+    .ved-export-bar2 { width: 260px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .ved-export-prog { height: 100%; background: var(--accent); border-radius: 2px; transition: width .3s; }
+
+    @media (max-width: 640px) {
+      .ved-panel { display: none; }
+    }
+
     /* ── Responsive ── */
     @media (max-width: 600px) {
       #grid, .kw-grid { grid-template-columns: 1fr; }
@@ -1596,6 +1954,134 @@
     </div><!-- /ed-panel -->
   </div><!-- /ed-body -->
 </div><!-- /editor-modal -->
+
+<!-- ══ VIDEO EDITOR MODAL ══ -->
+<div id="veditor-modal">
+  <div class="ved-topbar">
+    <button class="ed-back" id="ved-back-btn">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+    <span class="ed-filename" id="ved-filename">video.mp4</span>
+    <div class="ed-topbar-spacer"></div>
+    <button class="ed-tb-btn" id="ved-undo-btn" disabled>↩ Undo</button>
+    <button class="ed-tb-btn" id="ved-reset-btn">Reset</button>
+    <button class="ed-tb-btn accent" id="ved-export-btn">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export WebM
+    </button>
+    <button class="ed-tb-btn purple" id="ved-savetl-btn">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="12" height="4" rx="1"/><rect x="3" y="17" width="15" height="4" rx="1"/></svg>
+      Save to Timeline
+    </button>
+  </div>
+
+  <div class="ved-body">
+    <!-- Preview + controls column -->
+    <div class="ved-preview-col">
+      <div class="ved-video-wrap" id="ved-video-wrap">
+        <video id="ved-video" preload="metadata" playsinline crossorigin="anonymous"></video>
+        <canvas id="ved-text-canvas"></canvas>
+        <!-- Export overlay -->
+        <div class="ved-export-overlay" id="ved-export-overlay">
+          <div class="ved-export-label" id="ved-export-label">Exporting…</div>
+          <div class="ved-export-sub" id="ved-export-sub">Recording video in real-time</div>
+          <div class="ved-export-bar2"><div class="ved-export-prog" id="ved-export-prog"></div></div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="ved-controls">
+        <div class="trim-time-row">
+          <span id="ved-cur-time">0:00</span>
+          <span>Trim: <b id="ved-trim-range">0:00 – 0:00</b></span>
+          <span id="ved-total-time">0:00</span>
+        </div>
+
+        <!-- Trim bar -->
+        <div class="trim-bar-outer" id="ved-trim-bar">
+          <div class="trim-waveform" id="ved-waveform"></div>
+          <div class="trim-inactive-left"  id="vh-inactive-left"></div>
+          <div class="trim-inactive-right" id="vh-inactive-right"></div>
+          <div class="trim-active-border"  id="vh-active-border"></div>
+          <div class="trim-handle-btn" id="vh-start"></div>
+          <div class="trim-handle-btn" id="vh-end"></div>
+          <div class="trim-playhead" id="vh-playhead"></div>
+        </div>
+
+        <!-- Playback row -->
+        <div class="ved-pb-row">
+          <button class="ved-pb-btn" id="ved-rewind-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+          </button>
+          <button class="ved-pb-btn" id="ved-play-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Play
+          </button>
+          <div class="ved-vol-row">
+            <label>Vol</label>
+            <input type="range" min="0" max="100" value="100" id="ved-vol-range" />
+          </div>
+          <div class="ved-speed-btns">
+            <button class="ved-speed-btn" data-speed="0.5">0.5×</button>
+            <button class="ved-speed-btn active" data-speed="1">1×</button>
+            <button class="ved-speed-btn" data-speed="1.5">1.5×</button>
+            <button class="ved-speed-btn" data-speed="2">2×</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /ved-preview-col -->
+
+    <!-- Right panel -->
+    <div class="ved-panel">
+      <div class="ved-tabs">
+        <button class="ved-tab active" data-vtab="filters">Filters</button>
+        <button class="ved-tab" data-vtab="text">Text</button>
+        <button class="ved-tab" data-vtab="tools">Tools</button>
+      </div>
+
+      <!-- Filters tab -->
+      <div class="ved-tab-panel active" id="vtab-filters">
+        <!-- Preset buttons -->
+        <div class="ed-panel-label">Presets</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px" id="ved-presets"></div>
+        <div class="ed-panel-label" style="margin-top:4px">Adjust</div>
+        <div id="ved-filter-sliders"></div>
+      </div>
+
+      <!-- Text tab -->
+      <div class="ved-tab-panel" id="vtab-text">
+        <div class="ed-panel-label">Text Overlays</div>
+        <div class="ved-text-list" id="ved-text-list"></div>
+        <div class="ved-add-text-form">
+          <input class="ved-text-input-field" id="ved-new-text-input" placeholder="Enter text…" maxlength="80" />
+          <div class="ed-swatches" id="ved-text-swatches" style="margin-bottom:7px"></div>
+          <div class="ed-size-row" style="margin-bottom:8px">
+            <label style="font-size:11px;color:var(--text-muted);width:30px;flex-shrink:0">Size</label>
+            <input type="range" min="14" max="120" value="48" id="ved-text-size" style="flex:1;accent-color:var(--accent)"/>
+            <span id="ved-text-size-val" style="font-size:12px;color:var(--text);font-weight:600;width:24px;text-align:right">48</span>
+          </div>
+          <button class="ved-btn-add-text" id="ved-add-text-btn">+ Add to Video</button>
+        </div>
+      </div>
+
+      <!-- Tools tab -->
+      <div class="ved-tab-panel" id="vtab-tools">
+        <div class="ed-panel-label">Crop Aspect</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px" id="ved-aspect-btns"></div>
+        <div class="ed-panel-label">Orientation</div>
+        <div style="display:flex;gap:5px;margin-bottom:14px">
+          <button class="ed-tb-btn" id="ved-fliph-btn" style="flex:1">↔ Flip H</button>
+          <button class="ed-tb-btn" id="ved-flipv-btn" style="flex:1">↕ Flip V</button>
+        </div>
+        <div class="ed-panel-label">Trim Info</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.7" id="ved-trim-info">
+          Set trim handles on the timeline bar to cut the video start and end.
+        </div>
+      </div>
+    </div><!-- /ved-panel -->
+  </div><!-- /ved-body -->
+</div><!-- /veditor-modal -->
 
 <!-- ── Video modal ── -->
 <div id="modal" role="dialog" aria-modal="true">
@@ -2209,6 +2695,7 @@
         <span class="tl-clip-num">${idx + 1}</span>
         <button class="tl-clip-remove" data-id="${clip.id}" title="Remove">&#x2715;</button>
         <img class="tl-clip-thumb" src="${escHtml(clip.thumb)}" alt="${escHtml(clip.title)}" loading="lazy" />
+        <button class="tl-clip-edit" data-idx="${idx}" title="Edit video">✏️ Edit</button>
         <div class="tl-clip-info">
           <div class="tl-clip-title">${escHtml(clip.title)}</div>
           <div class="tl-clip-dur">${formatDur(clip.duration)}</div>
@@ -2989,6 +3476,702 @@
       if (range) { range.value = ed.filters[f.key]; val.textContent = ed.filters[f.key] + f.unit; }
     });
   }
+
+  // ═══════════════════════════════════════════════════════
+  //  VIDEO EDITOR
+  // ═══════════════════════════════════════════════════════
+
+  const vedModal      = document.getElementById('veditor-modal');
+  const vedVideoEl    = document.getElementById('ved-video');
+  const vedTextCanvas = document.getElementById('ved-text-canvas');
+  const vedTextCtx    = vedTextCanvas.getContext('2d');
+  const vedTrimBar    = document.getElementById('ved-trim-bar');
+  const vhStart       = document.getElementById('vh-start');
+  const vhEnd         = document.getElementById('vh-end');
+  const vhPlayhead    = document.getElementById('vh-playhead');
+  const vhInactLeft   = document.getElementById('vh-inactive-left');
+  const vhInactRight  = document.getElementById('vh-inactive-right');
+  const vhActBorder   = document.getElementById('vh-active-border');
+  const vedCurTime    = document.getElementById('ved-cur-time');
+  const vedTotalTime  = document.getElementById('ved-total-time');
+  const vedTrimRange  = document.getElementById('ved-trim-range');
+  const vedPlayBtn    = document.getElementById('ved-play-btn');
+  const vedExportOverlay = document.getElementById('ved-export-overlay');
+  const vedExportProg    = document.getElementById('ved-export-prog');
+  const vedExportLabel   = document.getElementById('ved-export-label');
+  const vedExportSub     = document.getElementById('ved-export-sub');
+
+  // ── Editor state ──
+  const ve = {
+    clip: null,
+    trimStart: 0,
+    trimEnd: 0,
+    duration: 0,
+    filters: { brightness:100, contrast:100, sat:100, warmth:0, sepia:0, grayscale:0 },
+    texts: [],        // [{text, x, y, color, size, bold}]
+    selectedText: -1,
+    history: [],
+    speed: 1,
+    isPlaying: false,
+    isExporting: false,
+    dragHandle: null, // 'start'|'end'|'seek'
+    dragStartX: 0,
+    dragStartVal: 0,
+    rafId: null,
+    flipX: false,
+    flipY: false,
+  };
+
+  // ── VE Filter defs ──
+  const VE_FILTERS = [
+    { key:'brightness', label:'Brightness', min:0,   max:200, def:100, unit:'%' },
+    { key:'contrast',   label:'Contrast',   min:0,   max:200, def:100, unit:'%' },
+    { key:'sat',        label:'Saturation', min:0,   max:300, def:100, unit:'%' },
+    { key:'warmth',     label:'Warmth',     min:-100, max:100, def:0,  unit:''  },
+    { key:'sepia',      label:'Sepia',      min:0,   max:100, def:0,   unit:'%' },
+    { key:'grayscale',  label:'Grayscale',  min:0,   max:100, def:0,   unit:'%' },
+  ];
+
+  // ── Presets ──
+  const VE_PRESETS = [
+    { name:'None',      filters:{ brightness:100, contrast:100, sat:100, warmth:0,   sepia:0,  grayscale:0  } },
+    { name:'Vivid',     filters:{ brightness:105, contrast:120, sat:160, warmth:10,  sepia:0,  grayscale:0  } },
+    { name:'Cinematic', filters:{ brightness:90,  contrast:130, sat:80,  warmth:-10, sepia:15, grayscale:0  } },
+    { name:'Warm',      filters:{ brightness:105, contrast:105, sat:120, warmth:60,  sepia:10, grayscale:0  } },
+    { name:'Cool',      filters:{ brightness:100, contrast:110, sat:90,  warmth:-50, sepia:0,  grayscale:0  } },
+    { name:'B&W',       filters:{ brightness:100, contrast:120, sat:0,   warmth:0,   sepia:0,  grayscale:100} },
+    { name:'Vintage',   filters:{ brightness:95,  contrast:90,  sat:80,  warmth:40,  sepia:35, grayscale:0  } },
+    { name:'Neon',      filters:{ brightness:110, contrast:140, sat:200, warmth:0,   sepia:0,  grayscale:0  } },
+  ];
+
+  // ── Build filter UI ──
+  (function buildVEFilterUI() {
+    // Presets
+    const presetWrap = document.getElementById('ved-presets');
+    VE_PRESETS.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'ved-speed-btn';
+      btn.textContent = p.name;
+      btn.style.padding = '4px 10px';
+      btn.addEventListener('click', () => {
+        vePushHistory();
+        ve.filters = { ...p.filters };
+        applyVEFilters();
+        updateVEFilterSliders();
+        presetWrap.querySelectorAll('.ved-speed-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+      presetWrap.appendChild(btn);
+    });
+
+    // Sliders
+    const wrap = document.getElementById('ved-filter-sliders');
+    VE_FILTERS.forEach(f => {
+      const row = document.createElement('div');
+      row.className = 'ed-slider-row';
+      row.innerHTML = `
+        <div class="ed-slider-header">
+          <span>${f.label}</span>
+          <span class="ed-slider-val" id="vf-val-${f.key}">${f.def}${f.unit}</span>
+        </div>
+        <input type="range" class="ed-range" id="vf-${f.key}" min="${f.min}" max="${f.max}" value="${f.def}" />
+      `;
+      wrap.appendChild(row);
+      document.getElementById(`vf-${f.key}`).addEventListener('input', function() {
+        ve.filters[f.key] = +this.value;
+        document.getElementById(`vf-val-${f.key}`).textContent = this.value + f.unit;
+        applyVEFilters();
+        // Deselect preset
+        document.getElementById('ved-presets').querySelectorAll('.ved-speed-btn').forEach(b => b.classList.remove('active'));
+      });
+    });
+  })();
+
+  function applyVEFilters() {
+    const f = ve.filters;
+    let warmStr = '';
+    if (f.warmth > 0) warmStr = `sepia(${f.warmth * 0.4}%) hue-rotate(-${f.warmth * 0.15}deg)`;
+    else if (f.warmth < 0) warmStr = `hue-rotate(${Math.abs(f.warmth) * 0.3}deg)`;
+    vedVideoEl.style.filter = [
+      `brightness(${f.brightness}%)`,
+      `contrast(${f.contrast}%)`,
+      `saturate(${f.sat}%)`,
+      f.sepia > 0     ? `sepia(${f.sepia}%)`     : '',
+      f.grayscale > 0 ? `grayscale(${f.grayscale}%)` : '',
+      warmStr,
+    ].filter(Boolean).join(' ');
+  }
+
+  function updateVEFilterSliders() {
+    VE_FILTERS.forEach(f => {
+      const el = document.getElementById(`vf-${f.key}`);
+      const vl = document.getElementById(`vf-val-${f.key}`);
+      if (el) { el.value = ve.filters[f.key]; vl.textContent = ve.filters[f.key] + f.unit; }
+    });
+  }
+
+  function buildVEFilterString() {
+    const f = ve.filters;
+    let warmStr = '';
+    if (f.warmth > 0) warmStr = `sepia(${f.warmth * 0.4}%) hue-rotate(-${f.warmth * 0.15}deg)`;
+    else if (f.warmth < 0) warmStr = `hue-rotate(${Math.abs(f.warmth) * 0.3}deg)`;
+    return [
+      `brightness(${f.brightness}%)`, `contrast(${f.contrast}%)`, `saturate(${f.sat}%)`,
+      f.sepia > 0 ? `sepia(${f.sepia}%)` : '',
+      f.grayscale > 0 ? `grayscale(${f.grayscale}%)` : '',
+      warmStr,
+    ].filter(Boolean).join(' ');
+  }
+
+  // ── Build text color swatches ──
+  (function buildVETextSwatches() {
+    const wrap = document.getElementById('ved-text-swatches');
+    PALETTE.forEach(c => {
+      const sw = document.createElement('div');
+      sw.className = 'ed-swatch';
+      sw.style.background = c;
+      sw.style.width = '20px'; sw.style.height = '20px';
+      if (c === '#ffffff') sw.classList.add('active');
+      sw.addEventListener('click', () => {
+        wrap.querySelectorAll('.ed-swatch').forEach(s => s.classList.remove('active'));
+        sw.classList.add('active');
+        ve._textColor = c;
+      });
+      wrap.appendChild(sw);
+    });
+    ve._textColor = '#ffffff';
+  })();
+
+  document.getElementById('ved-text-size').addEventListener('input', function() {
+    document.getElementById('ved-text-size-val').textContent = this.value;
+  });
+
+  // ── Open video editor ──
+  function openVideoEditor(clip) {
+    ve.clip = clip;
+    ve.texts = [];
+    ve.history = [];
+    ve.flipX = ve.flipY = false;
+    ve.filters = { brightness:100, contrast:100, sat:100, warmth:0, sepia:0, grayscale:0 };
+    ve.speed = 1;
+    ve.isPlaying = false;
+    ve.selectedText = -1;
+
+    document.getElementById('ved-filename').textContent = clip.title || 'video';
+    document.getElementById('ved-undo-btn').disabled = true;
+    updateVEFilterSliders();
+    applyVEFilters();
+
+    vedVideoEl.playbackRate = 1;
+    document.querySelectorAll('.ved-speed-btn').forEach(b => b.classList.toggle('active', b.dataset.speed === '1'));
+
+    vedVideoEl.src = clip.url;
+    vedVideoEl.load();
+    vedVideoEl.crossOrigin = 'anonymous';
+
+    vedVideoEl.onloadedmetadata = () => {
+      const dur = vedVideoEl.duration || 0;
+      ve.duration = dur;
+      ve.trimStart = 0;
+      ve.trimEnd = dur;
+      vedVideoEl.currentTime = 0;
+      vedTotalTime.textContent = formatDur(Math.round(dur));
+      updateTrimUI();
+      buildWaveform();
+      resizeTextCanvas();
+      redrawVEText();
+    };
+
+    vedVideoEl.ontimeupdate = () => {
+      if (ve.isExporting) return;
+      const t = vedVideoEl.currentTime;
+      vedCurTime.textContent = formatDur(Math.round(t));
+      updatePlayhead(t);
+      if (t >= ve.trimEnd) {
+        vedVideoEl.pause();
+        ve.isPlaying = false;
+        updatePlayBtn();
+        vedVideoEl.currentTime = ve.trimStart;
+      }
+    };
+
+    document.getElementById('ved-text-list').innerHTML = '';
+    document.getElementById('ved-new-text-input').value = '';
+
+    vedModal.classList.add('open');
+  }
+
+  // ── Close ──
+  document.getElementById('ved-back-btn').addEventListener('click', () => {
+    vedVideoEl.pause();
+    vedVideoEl.src = '';
+    ve.isPlaying = false;
+    vedModal.classList.remove('open');
+  });
+
+  // ── Playback ──
+  vedPlayBtn.addEventListener('click', toggleVEPlay);
+
+  function toggleVEPlay() {
+    if (vedVideoEl.currentTime >= ve.trimEnd) vedVideoEl.currentTime = ve.trimStart;
+    ve.isPlaying = !ve.isPlaying;
+    if (ve.isPlaying) vedVideoEl.play();
+    else              vedVideoEl.pause();
+    updatePlayBtn();
+  }
+
+  function updatePlayBtn() {
+    vedPlayBtn.innerHTML = ve.isPlaying
+      ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause`
+      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Play`;
+  }
+
+  document.getElementById('ved-rewind-btn').addEventListener('click', () => {
+    vedVideoEl.currentTime = ve.trimStart;
+    ve.isPlaying = false; vedVideoEl.pause(); updatePlayBtn();
+  });
+
+  document.getElementById('ved-vol-range').addEventListener('input', function() {
+    vedVideoEl.volume = this.value / 100;
+  });
+
+  document.querySelectorAll('.ved-speed-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      ve.speed = +this.dataset.speed;
+      vedVideoEl.playbackRate = ve.speed;
+      document.querySelectorAll('.ved-speed-btn').forEach(b => b.classList.toggle('active', b === this));
+    });
+  });
+
+  // ── Tabs ──
+  document.querySelectorAll('.ved-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.vtab;
+      document.querySelectorAll('.ved-tab').forEach(t => t.classList.toggle('active', t === tab));
+      document.querySelectorAll('.ved-tab-panel').forEach(p => p.classList.toggle('active', p.id === 'vtab-' + target));
+    });
+  });
+
+  // ── Flip ──
+  document.getElementById('ved-fliph-btn').addEventListener('click', () => {
+    ve.flipX = !ve.flipX;
+    vedVideoEl.style.transform = `scaleX(${ve.flipX ? -1 : 1}) scaleY(${ve.flipY ? -1 : 1})`;
+  });
+
+  document.getElementById('ved-flipv-btn').addEventListener('click', () => {
+    ve.flipY = !ve.flipY;
+    vedVideoEl.style.transform = `scaleX(${ve.flipX ? -1 : 1}) scaleY(${ve.flipY ? -1 : 1})`;
+  });
+
+  // ── Reset ──
+  document.getElementById('ved-reset-btn').addEventListener('click', () => {
+    if (!confirm('Reset all edits to this video?')) return;
+    ve.texts = []; ve.history = [];
+    ve.flipX = ve.flipY = false;
+    ve.filters = { brightness:100, contrast:100, sat:100, warmth:0, sepia:0, grayscale:0 };
+    ve.trimStart = 0; ve.trimEnd = ve.duration; ve.speed = 1;
+    vedVideoEl.playbackRate = 1; vedVideoEl.style.filter = ''; vedVideoEl.style.transform = '';
+    document.querySelectorAll('.ved-speed-btn').forEach(b => b.classList.toggle('active', b.dataset.speed === '1'));
+    updateVEFilterSliders(); applyVEFilters(); updateTrimUI(); renderVETextList(); redrawVEText();
+    document.getElementById('ved-undo-btn').disabled = true;
+  });
+
+  // ── Trim bar ──
+  function updateTrimUI() {
+    const { trimStart, trimEnd, duration } = ve;
+    if (!duration) return;
+    const w = vedTrimBar.clientWidth;
+    const sp = trimStart / duration * 100;
+    const ep = trimEnd   / duration * 100;
+    vhStart.style.left  = `${sp}%`;
+    vhEnd.style.right   = `${100 - ep}%`;
+    vhInactLeft.style.left  = '0';
+    vhInactLeft.style.width = `${sp}%`;
+    vhInactRight.style.right  = '0';
+    vhInactRight.style.width  = `${100 - ep}%`;
+    vhActBorder.style.left  = `${sp}%`;
+    vhActBorder.style.width = `${ep - sp}%`;
+    vedTrimRange.textContent = `${formatDur(Math.round(trimStart))} – ${formatDur(Math.round(trimEnd))}`;
+
+    const clipLen = trimEnd - trimStart;
+    document.getElementById('ved-trim-info').innerHTML =
+      `<b>Start:</b> ${formatDur(Math.round(trimStart))}<br>` +
+      `<b>End:</b>   ${formatDur(Math.round(trimEnd))}<br>` +
+      `<b>Length:</b> ${formatDur(Math.round(clipLen))}`;
+  }
+
+  function updatePlayhead(t) {
+    if (!ve.duration) return;
+    const pct = (t / ve.duration) * 100;
+    vhPlayhead.style.left = `${pct}%`;
+  }
+
+  // Build fake waveform bars for visual flair
+  function buildWaveform() {
+    const wf = document.getElementById('ved-waveform');
+    wf.innerHTML = '';
+    for (let i = 0; i < 60; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'trim-wave-bar';
+      const h = 20 + Math.random() * 60;
+      bar.style.height = h + '%';
+      wf.appendChild(bar);
+    }
+  }
+
+  // Drag handles
+  let veDragging = null;
+
+  function trimBarX(e) {
+    const rect = vedTrimBar.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return Math.max(0, Math.min(1, (src.clientX - rect.left) / rect.width));
+  }
+
+  vedTrimBar.addEventListener('mousedown', onTrimBarDown);
+  vedTrimBar.addEventListener('touchstart', onTrimBarDown, { passive: false });
+
+  function onTrimBarDown(e) {
+    e.preventDefault();
+    const pct = trimBarX(e);
+    const startPct = ve.trimStart / ve.duration;
+    const endPct   = ve.trimEnd   / ve.duration;
+    const distStart = Math.abs(pct - startPct);
+    const distEnd   = Math.abs(pct - endPct);
+
+    if (distStart < 0.05) veDragging = 'start';
+    else if (distEnd < 0.05) veDragging = 'end';
+    else {
+      // Seek click
+      const t = pct * ve.duration;
+      if (t >= ve.trimStart && t <= ve.trimEnd) {
+        vedVideoEl.currentTime = t;
+        updatePlayhead(t);
+      }
+    }
+  }
+
+  document.addEventListener('mousemove', onTrimMove);
+  document.addEventListener('touchmove', onTrimMove, { passive: false });
+
+  function onTrimMove(e) {
+    if (!veDragging) return;
+    e.preventDefault();
+    const pct = trimBarX(e);
+    const t   = pct * ve.duration;
+    if (veDragging === 'start') {
+      ve.trimStart = Math.max(0, Math.min(t, ve.trimEnd - 0.5));
+      vedVideoEl.currentTime = ve.trimStart;
+    } else {
+      ve.trimEnd = Math.min(ve.duration, Math.max(t, ve.trimStart + 0.5));
+      vedVideoEl.currentTime = ve.trimEnd;
+    }
+    updateTrimUI();
+  }
+
+  document.addEventListener('mouseup',  () => { veDragging = null; });
+  document.addEventListener('touchend', () => { veDragging = null; });
+
+  // ── Text overlay ──
+  function resizeTextCanvas() {
+    const rect = vedVideoEl.getBoundingClientRect();
+    vedTextCanvas.width  = rect.width  || 640;
+    vedTextCanvas.height = rect.height || 360;
+    vedTextCanvas.style.width  = (rect.width  || 640) + 'px';
+    vedTextCanvas.style.height = (rect.height || 360) + 'px';
+    redrawVEText();
+  }
+
+  new ResizeObserver(resizeTextCanvas).observe(vedVideoEl);
+
+  function redrawVEText() {
+    const w = vedTextCanvas.width, h = vedTextCanvas.height;
+    vedTextCtx.clearRect(0, 0, w, h);
+    ve.texts.forEach((t, i) => {
+      const weight = t.bold ? 'bold' : 'normal';
+      vedTextCtx.save();
+      vedTextCtx.font = `${weight} ${t.size}px Inter, sans-serif`;
+      vedTextCtx.fillStyle = t.color;
+      vedTextCtx.textAlign = 'center';
+      vedTextCtx.textBaseline = 'middle';
+      vedTextCtx.shadowColor = 'rgba(0,0,0,0.7)';
+      vedTextCtx.shadowBlur  = t.size * 0.35;
+      vedTextCtx.fillText(t.text, t.x, t.y);
+      if (i === ve.selectedText) {
+        vedTextCtx.strokeStyle = 'rgba(249,115,22,.8)';
+        vedTextCtx.lineWidth = 1.5;
+        const mw = vedTextCtx.measureText(t.text).width;
+        vedTextCtx.strokeRect(t.x - mw/2 - 6, t.y - t.size/2 - 4, mw + 12, t.size + 8);
+      }
+      vedTextCtx.restore();
+    });
+  }
+
+  vedTextCanvas.addEventListener('click', e => {
+    if (!vedTextCanvas.classList.contains('interactive')) return;
+    const rect = vedTextCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    // Check if clicked existing text
+    let hit = -1;
+    ve.texts.forEach((t, i) => {
+      vedTextCtx.font = `${t.bold ? 'bold' : 'normal'} ${t.size}px Inter, sans-serif`;
+      const mw = vedTextCtx.measureText(t.text).width;
+      if (x > t.x - mw/2 - 10 && x < t.x + mw/2 + 10 && y > t.y - t.size/2 - 8 && y < t.y + t.size/2 + 8) {
+        hit = i;
+      }
+    });
+    ve.selectedText = hit;
+    redrawVEText();
+  });
+
+  vedTextCanvas.addEventListener('mousedown', function(e) {
+    if (!vedTextCanvas.classList.contains('interactive')) return;
+    if (ve.selectedText < 0) return;
+    const rect = vedTextCanvas.getBoundingClientRect();
+    let startX = e.clientX, startY = e.clientY;
+    const origX = ve.texts[ve.selectedText].x;
+    const origY = ve.texts[ve.selectedText].y;
+
+    function onMove(ev) {
+      ve.texts[ve.selectedText].x = origX + (ev.clientX - startX);
+      ve.texts[ve.selectedText].y = origY + (ev.clientY - startY);
+      redrawVEText();
+    }
+
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onUp);
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+  });
+
+  document.getElementById('ved-add-text-btn').addEventListener('click', () => {
+    const txt = document.getElementById('ved-new-text-input').value.trim();
+    if (!txt) return;
+    const size  = +document.getElementById('ved-text-size').value;
+    const color = ve._textColor || '#ffffff';
+    vePushHistory();
+    ve.texts.push({
+      text: txt,
+      x: vedTextCanvas.width  / 2,
+      y: vedTextCanvas.height * 0.85,
+      color, size, bold: true,
+    });
+    document.getElementById('ved-new-text-input').value = '';
+    renderVETextList();
+    redrawVEText();
+    // Enable interactive mode to allow dragging
+    vedTextCanvas.classList.add('interactive');
+  });
+
+  function renderVETextList() {
+    const list = document.getElementById('ved-text-list');
+    list.innerHTML = '';
+    ve.texts.forEach((t, i) => {
+      const item = document.createElement('div');
+      item.className = 'ved-text-item' + (i === ve.selectedText ? ' selected' : '');
+      item.innerHTML = `
+        <span class="ved-text-item-label" style="color:${t.color}">${escHtml(t.text)}</span>
+        <button class="ved-text-item-del" data-i="${i}" title="Remove">✕</button>
+      `;
+      item.addEventListener('click', () => { ve.selectedText = i; renderVETextList(); redrawVEText(); });
+      item.querySelector('.ved-text-item-del').addEventListener('click', e => {
+        e.stopPropagation();
+        vePushHistory();
+        ve.texts.splice(i, 1);
+        ve.selectedText = -1;
+        renderVETextList(); redrawVEText();
+      });
+      list.appendChild(item);
+    });
+  }
+
+  // ── Undo ──
+  function vePushHistory() {
+    ve.history.push({
+      texts: JSON.parse(JSON.stringify(ve.texts)),
+      filters: { ...ve.filters },
+      trimStart: ve.trimStart, trimEnd: ve.trimEnd,
+      flipX: ve.flipX, flipY: ve.flipY,
+    });
+    if (ve.history.length > 30) ve.history.shift();
+    document.getElementById('ved-undo-btn').disabled = false;
+  }
+
+  document.getElementById('ved-undo-btn').addEventListener('click', () => {
+    if (!ve.history.length) return;
+    const snap = ve.history.pop();
+    ve.texts = snap.texts; ve.filters = snap.filters;
+    ve.trimStart = snap.trimStart; ve.trimEnd = snap.trimEnd;
+    ve.flipX = snap.flipX; ve.flipY = snap.flipY;
+    applyVEFilters(); updateVEFilterSliders(); updateTrimUI();
+    renderVETextList(); redrawVEText();
+    document.getElementById('ved-undo-btn').disabled = ve.history.length === 0;
+    vedVideoEl.style.transform = `scaleX(${ve.flipX ? -1 : 1}) scaleY(${ve.flipY ? -1 : 1})`;
+  });
+
+  // ── Save to Timeline ──
+  document.getElementById('ved-savetl-btn').addEventListener('click', () => {
+    if (!ve.clip) return;
+    const trimLen = Math.round(ve.trimEnd - ve.trimStart);
+    const idx = timeline.findIndex(c => c.id === ve.clip.id);
+    const updated = {
+      ...ve.clip,
+      duration: trimLen,
+      _trimStart: ve.trimStart,
+      _trimEnd:   ve.trimEnd,
+      _filters:   { ...ve.filters },
+      _texts:     JSON.parse(JSON.stringify(ve.texts)),
+      _speed:     ve.speed,
+      _flipX:     ve.flipX,
+      _flipY:     ve.flipY,
+    };
+    if (idx >= 0) timeline[idx] = updated;
+    else timeline.push(updated);
+    renderTimeline();
+    vedVideoEl.pause(); vedVideoEl.src = '';
+    vedModal.classList.remove('open');
+    showStatus(`"${ve.clip.title}" saved to timeline (${formatDur(trimLen)}).`, 'info');
+    setTimeout(hideStatus, 2500);
+  });
+
+  // ── Export using canvas + MediaRecorder ──
+  document.getElementById('ved-export-btn').addEventListener('click', async () => {
+    if (ve.isExporting) return;
+    ve.isExporting = true;
+
+    vedVideoEl.pause(); ve.isPlaying = false; updatePlayBtn();
+    vedExportOverlay.classList.add('visible');
+    vedExportLabel.textContent = 'Preparing export…';
+    vedExportSub.textContent   = 'Setting up canvas recorder…';
+    vedExportProg.style.width  = '0%';
+
+    // Render canvas (full native resolution)
+    const rCanvas = document.createElement('canvas');
+    const rCtx    = rCanvas.getContext('2d');
+    rCanvas.width  = vedVideoEl.videoWidth  || 1280;
+    rCanvas.height = vedVideoEl.videoHeight || 720;
+
+    // Check MediaRecorder support
+    const mimeTypes = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+    const mime = mimeTypes.find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+
+    let stream;
+    try {
+      stream = rCanvas.captureStream(30);
+      // Try to grab audio from video element
+      const audioCtx = new AudioContext();
+      const src = audioCtx.createMediaElementSource(vedVideoEl);
+      const dest = audioCtx.createMediaStreamDestination();
+      src.connect(dest);
+      src.connect(audioCtx.destination);
+      dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+    } catch(e) {
+      stream = stream || rCanvas.captureStream(30);
+    }
+
+    const recorder  = new MediaRecorder(stream, { mimeType: mime });
+    const chunks    = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: mime });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url; a.download = (ve.clip?.title || 'viralforge') + '-edited.webm';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      vedExportOverlay.classList.remove('visible');
+      ve.isExporting = false;
+    };
+
+    // Seek to trim start and start recording
+    vedVideoEl.currentTime = ve.trimStart;
+    vedVideoEl.playbackRate = ve.speed;
+    await new Promise(r => { vedVideoEl.onseeked = r; setTimeout(r, 1000); });
+
+    recorder.start(100);
+    vedVideoEl.play();
+    vedExportLabel.textContent = 'Recording…';
+    vedExportSub.textContent   = 'Playing video in real-time. Do not close this window.';
+
+    const filterStr = buildVEFilterString();
+    const totalLen  = ve.trimEnd - ve.trimStart;
+
+    function drawExportFrame() {
+      if (!ve.isExporting) return;
+      const elapsed = vedVideoEl.currentTime - ve.trimStart;
+      const pct = Math.min(1, elapsed / totalLen);
+      vedExportProg.style.width = Math.round(pct * 100) + '%';
+
+      if (vedVideoEl.currentTime >= ve.trimEnd || vedVideoEl.ended) {
+        recorder.stop();
+        vedVideoEl.pause();
+        return;
+      }
+
+      rCtx.save();
+      rCtx.filter = filterStr;
+      // Apply flip
+      rCtx.translate(rCanvas.width / 2, rCanvas.height / 2);
+      rCtx.scale(ve.flipX ? -1 : 1, ve.flipY ? -1 : 1);
+      rCtx.drawImage(vedVideoEl, -rCanvas.width / 2, -rCanvas.height / 2, rCanvas.width, rCanvas.height);
+      rCtx.restore();
+      rCtx.filter = 'none';
+
+      // Draw texts (scale from canvas overlay coords to native resolution)
+      const scaleX = rCanvas.width  / (vedTextCanvas.width  || rCanvas.width);
+      const scaleY = rCanvas.height / (vedTextCanvas.height || rCanvas.height);
+      ve.texts.forEach(t => {
+        rCtx.save();
+        const scaledSize = t.size * Math.min(scaleX, scaleY);
+        rCtx.font = `${t.bold ? 'bold' : 'normal'} ${scaledSize}px Inter, sans-serif`;
+        rCtx.fillStyle = t.color;
+        rCtx.textAlign = 'center';
+        rCtx.textBaseline = 'middle';
+        rCtx.shadowColor = 'rgba(0,0,0,0.75)';
+        rCtx.shadowBlur  = scaledSize * 0.35;
+        rCtx.fillText(t.text, t.x * scaleX, t.y * scaleY);
+        rCtx.restore();
+      });
+
+      requestAnimationFrame(drawExportFrame);
+    }
+
+    requestAnimationFrame(drawExportFrame);
+  });
+
+  // ── Hook Edit button on timeline clips ──
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.tl-clip-edit');
+    if (!btn) return;
+    const idx  = +btn.dataset.idx;
+    const clip = timeline[idx];
+    if (!clip || !clip.url) return;
+    if (clip.isImage) { showStatus('Image clips cannot be edited in the video editor.', 'info'); setTimeout(hideStatus, 2000); return; }
+    openVideoEditor(clip);
+  });
+
+  // ── Build aspect-ratio buttons ──
+  (function buildAspectBtns() {
+    const ratios = [{ label:'16:9', note:'YouTube' }, { label:'9:16', note:'Reels' },
+                    { label:'1:1', note:'Square' }, { label:'4:3', note:'Classic' }];
+    const wrap = document.getElementById('ved-aspect-btns');
+    ratios.forEach(r => {
+      const btn = document.createElement('button');
+      btn.className = 'ved-speed-btn';
+      btn.title = r.note;
+      btn.textContent = r.label;
+      btn.style.padding = '4px 10px';
+      btn.addEventListener('click', () => {
+        wrap.querySelectorAll('.ved-speed-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+      wrap.appendChild(btn);
+    });
+  })();
 </script>
 </body>
 </html>
