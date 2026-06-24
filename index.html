@@ -2824,11 +2824,17 @@
         const res = await fetch(clip.url);
         if (!res.ok) throw new Error();
         const blob = await res.blob();
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = fname;
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(a.href);
+        const base64 = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.readAsDataURL(blob);
+          });
+          await Capacitor.Plugins.Filesystem.writeFile({
+            path: fname,
+            data: base64,
+            directory: 'DOWNLOADS',
+            recursive: true
+          });
       } catch {
         // Fallback: direct link
         const a = document.createElement('a');
