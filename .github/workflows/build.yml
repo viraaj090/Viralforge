@@ -30,13 +30,18 @@ jobs:
           mkdir www && cp index.html www/
           npx cap init ViralForge com.viraaj090.viralforge --web-dir www
           npx cap add android
+
+      - name: Add Android Permissions
+        run: |
+          sed -i 's/<\/manifest>/    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"\/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"\/>\n<\/manifest>/' android/app/src/main/AndroidManifest.xml
+
       - name: Build APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew wrapper --gradle-version=8.3
           ./gradlew assembleDebug
-          
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
