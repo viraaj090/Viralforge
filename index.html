@@ -2810,45 +2810,53 @@
   //  Export Pack
   // ─────────────────────────────────────────
   tlExportBtn.addEventListener('click', async () => {
-    if (!timeline.length) return;
-    exportOverlay.classList.add('open');
+  if (!timeline.length) return;
+  exportOverlay.classList.add('open');
 
-    for (let i = 0; i < timeline.length; i++) {
-      const clip = timeline[i];
-      const num  = String(i + 1).padStart(2, '0');
-      const fname = `${num}-viralforge-${clip.filename}`;
-      exportStatus.textContent = `Downloading ${num}/${timeline.length}: ${clip.title}`;
-      exportFill.style.width = Math.round(i / timeline.length * 100) + '%';
+  for (let i = 0; i < timeline.length; i++) {
+    const clip = timeline[i];
+    const num = String(i + 1).padStart(2, '0');
+    const fname = `${num}-viralforge-${clip.filename}`;
+    exportStatus.textContent = `Downloading ${num}/${timeline.length}: ${clip.title}`;
+    exportFill.style.width = Math.round(i / timeline.length * 100) + '%';
 
-      try {
-        const res = await fetch(clip.url);
-        if (!res.ok) throw new Error();
-        const blob = await res.blob();
-        const base64 = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            reader.readAsDataURL(blob);
-          });
-          await Capacitor.Plugins.Filesystem.writeFile({
-            path: fname,
-            data: base64,
-            directory: 'DOWNLOADS',
-            recursive: true
-          });
-      } catch {
-        // Fallback: direct link
-        const a = document.createElement('a');
-        a.href = clip.url; a.download = fname;
-        document.body.appendChild(a); a.click(); a.remove();
-      }
-      await sleep(800); // small gap so browser can handle downloads
+    if (clip.url.startsWith('blob:')) {
+      exportStatus.textContent = `Skipped ${num}/${timeline.length}: local file`;
+      continue;
     }
 
-    exportFill.style.width = '100%';
-    exportStatus.textContent = `Done! ${timeline.length} clip${timeline.length > 1 ? 's' : ''} downloaded.`;
-    await sleep(2000);
-    exportOverlay.classList.remove('open');
-    exportFill.style.width = '0%';
+    try {
+      const res = await fetch(clip.url);
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      const base64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(blob);
+      });
+      await Capacitor.Plugins.Filesystem.writeFile({
+        path: fname,
+        data: base64,
+        directory: 'DOWNLOADS',
+        recursive: true
+      });
+    } catch {
+      const a = document.createElement('a');
+      a.href = clip.url;
+      a.download = fname;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+    await sleep(800);
+  }
+
+  exportFill.style.width = '100%';
+  exportStatus.textContent = `Done! ${timeline.length} clip${timeline.length > 1 ? 's' : ''} downloaded.`;
+  await sleep(2000);
+  exportOverlay.classList.remove('open');
+  exportFill.style.width = '0%';
+});
   });
 
   // ─────────────────────────────────────────
