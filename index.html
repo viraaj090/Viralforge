@@ -2838,7 +2838,7 @@
       } catch {
         // Fallback: direct link
         const a = document.createElement('a');
-        a.href = clip.url; a.download = fname; a.target = '_blank';
+        a.href = clip.url; a.download = fname;
         document.body.appendChild(a); a.click(); a.remove();
       }
       await sleep(800); // small gap so browser can handle downloads
