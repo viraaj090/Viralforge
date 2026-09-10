@@ -1,12 +1,14 @@
 {
   "name": "viralforge",
   "version": "1.0.0",
+  "main": "index.js",
   "scripts": {
     "build": "echo 'static'"
   },
   "dependencies": {
     "@capacitor/core": "5.7.8",
     "@capacitor/cli": "5.7.8",
-    "@capacitor/android": "5.7.8"
+    "@capacitor/android": "5.7.8",
+    "ffmpeg-kit-react-native": "^6.0.2"
   }
 }
