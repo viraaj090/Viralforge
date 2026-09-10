@@ -6,27 +6,24 @@
     <title>ViralForge AI Studio</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        body { background-color: #121212; color: #ffffff; display: flex; flex-direction: column; height: 100vh; justify-content: space-between; }
+        body { background-color: #121212; color: #ffffff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .header { height: 50px; background-color: #1A1A1A; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; border-bottom: 1px solid #222; }
         .header h1 { font-size: 16px; font-weight: bold; }
         .export-btn { background-color: #7C3AED; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; }
-        
-        .preview-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 15px; }
-        .canvas { width: 100%; height: 280px; background-color: #1E1E1E; border-radius: 12px; border: 1px solid #333; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; text-align: center; padding: 15px; }
+        .preview-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 10px; }
+        .canvas { width: 100%; height: 260px; background-color: #1E1E1E; border-radius: 12px; border: 1px solid #333; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; text-align: center; padding: 15px; }
         .preview-text { color: #888; font-size: 14px; }
         .status-text { color: #10B981; font-weight: bold; margin-bottom: 8px; }
         .subtitle-box { position: absolute; bottom: 20px; background: rgba(0,0,0,0.8); padding: 6px 12px; border-radius: 6px; font-size: 12px; max-width: 85%; }
-
-        .panel-container { height: 210px; background-color: #1A1A1A; padding: 12px; border-top: 1px solid #222; display: flex; flex-direction: column; justify-content: space-between; }
-        .input-box { background-color: #262626; border: 1px solid #333; color: white; width: 100%; height: 50px; border-radius: 8px; padding: 10px; font-size: 13px; resize: none; outline: none; }
-        .gen-btn { background-color: #2563EB; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; margin-top: 8px; }
-        
+        .panel-container { height: 180px; background-color: #1A1A1A; padding: 12px; border-top: 1px solid #222; }
+        .input-box { background-color: #262626; border: 1px solid #333; color: white; width: 100%; height: 60px; border-radius: 8px; padding: 10px; font-size: 13px; resize: none; outline: none; }
+        .gen-btn { background-color: #2563EB; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; width: 100%; margin-top: 10px; }
         .toolbar { height: 60px; background-color: #0A0A0A; display: flex; border-top: 1px solid #222; }
-        .tool-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 10px; color: #AAA; background: none; border: none; cursor: pointer; }
-        .tool-item.active { background-color: #1E1B4B; color: white; }
-        .tool-icon { font-size: 16px; margin-bottom: 2px; }
-        .tab-content { display: none; flex-direction: column; justify-content: space-between; height: 100%; }
-        .tab-content.active { display: flex; }
+        .tool-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 11px; color: #AAA; background: none; border: none; cursor: pointer; }
+        .tool-item.active { background-color: #1E1B4B; color: #3B82F6; }
+        .tool-icon { font-size: 18px; margin-bottom: 2px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
 <body>
@@ -34,6 +31,77 @@
     <div class="header">
         <h1>🎬 ViralForge AI Studio</h1>
         <button class="export-btn" onclick="exportVideo()">Export Movie</button>
+    </div>
+
+    <div class="preview-container">
+        <div class="canvas">
+            <div id="previewState">
+                <p class="preview-text">📹 AI Video Preview Canvas</p>
+            </div>
+            <div id="subtitleOverlay" class="subtitle-box" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="panel-container">
+        <div id="tab-ai_video" class="tab-content active">
+            <textarea id="videoPrompt" class="input-box" placeholder="Describe video prompt..."></textarea>
+            <button class="gen-btn" onclick="generateVideo()">⚡ Generate AI Video</button>
+        </div>
+
+        <div id="tab-ai_voice" class="tab-content">
+            <textarea id="voiceScript" class="input-box" placeholder="Write voiceover script..."></textarea>
+            <button class="gen-btn" onclick="generateVoice()">🎙️ Generate ElevenLabs Voice</button>
+        </div>
+
+        <div id="tab-subtitles" class="tab-content">
+            <button class="gen-btn" style="margin-top:20px;" onclick="syncSubtitles()">✨ Sync Captions</button>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <button class="tool-item active" onclick="switchTab('ai_video', this)"><span class="tool-icon">🤖</span>AI Video</button>
+        <button class="tool-item" onclick="switchTab('ai_voice', this)"><span class="tool-icon">🎙️</span>AI Voice</button>
+        <button class="tool-item" onclick="switchTab('subtitles', this)"><span class="tool-icon">💬</span>Subtitles</button>
+    </div>
+
+    <script>
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tool-item').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            el.classList.add('active');
+        }
+
+        function generateVideo() {
+            const prompt = document.getElementById('videoPrompt').value;
+            if(!prompt) return alert('Prompt text likhein!');
+            
+            document.getElementById('previewState').innerHTML = `
+                <p class="status-text">⚡ AI Video Generation Ready!</p>
+                <p style="font-size: 11px; color: #AAA;">"${prompt}"</p>
+            `;
+            alert('AI Video generated!');
+        }
+
+        function generateVoice() {
+            const script = document.getElementById('voiceScript').value;
+            if(!script) return alert('Script text likhein!');
+
+            document.getElementById('subtitleOverlay').innerText = script;
+            document.getElementById('subtitleOverlay').style.display = 'block';
+            alert('Voiceover and captions generated!');
+        }
+
+        function syncSubtitles() {
+            alert('Subtitles synced to video!');
+        }
+
+        function exportVideo() {
+            alert('Exporting Final Compiled Movie...');
+        }
+    </script>
+</body>
+</html>
     </div>
 
     <div class="preview-container">
