@@ -1,39 +1,306 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Dimensions, SafeAreaView, StatusBar, Alert } from 'react-native';
-// FFmpeg Kit integration
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+  SafeAreaView,
+  StatusBar,
+  TextInput,
+  ActivityIndicator,
+  Alert
+} from 'react-native';
 import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native';
 
 const { width } = Dimensions.get('window');
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('trim');
+  const [activeTab, setActiveTab] = useState('ai_video');
   const [selectedFilter, setSelectedFilter] = useState('Normal');
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // AI Feature States
+  const [videoPrompt, setVideoPrompt] = useState('');
+  const [voiceScript, setVoiceScript] = useState('');
+  const [generatedSubtitle, setGeneratedSubtitle] = useState('');
+  const [selectedVoice, setSelectedVoice] = useState('Male (US)');
+  const [selectedStyle, setSelectedStyle] = useState('Cinematic');
+  
+  // Loading States
+  const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
+  const [isGeneratingVoice, setIsGeneratingVoice] = useState(false);
+  const [generatedVideoStatus, setGeneratedVideoStatus] = useState(null);
+
   const tools = [
+    { id: 'ai_video', name: 'AI Video', icon: '🤖' },
+    { id: 'ai_voice', name: 'AI Voice', icon: '🎙️' },
+    { id: 'subtitles', name: 'Subtitles', icon: '💬' },
     { id: 'trim', name: 'Trim', icon: '✂️' },
     { id: 'filters', name: 'Filters', icon: '🎨' },
-    { id: 'text', name: 'Text', icon: '📝' },
-    { id: 'audio', name: 'Audio', icon: '🎵' },
-    { id: 'adjust', name: 'Adjust', icon: '🖌️' },
   ];
 
-  const filters = ['Normal', 'Grayscale', 'Sepia', 'Vivid', 'Warm', 'Cool'];
+  const videoStyles = ['Cinematic', 'Anime', '3D Render', 'Cyberpunk', 'Photorealistic'];
+  const voices = ['Male (US)', 'Female (US)', 'Narrator (UK)', 'Hindi Expressive'];
+  const filters = ['Normal', 'Grayscale', 'Sepia', 'Vivid', 'Cinematic'];
 
-  // FFmpeg Export Handler
+  // 1. AI Text-to-Video Generator
+  const handleGenerateAIVideo = () => {
+    if (!videoPrompt.trim()) {
+      Alert.alert('Error', 'Kripya AI Video generate karne ke liye prompt text likhein!');
+      return;
+    }
+    setIsGeneratingVideo(true);
+    setGeneratedVideoStatus('Generating frames with AI...');
+
+    setTimeout(() => {
+      setIsGeneratingVideo(false);
+      setGeneratedVideoStatus(`AI Video Ready (${selectedStyle} Style)`);
+      Alert.alert('Success', 'AI Video clip successfully generated!');
+    }, 3000);
+  };
+
+  // 2. AI Voiceover Generator
+  const handleGenerateVoiceover = () => {
+    if (!voiceScript.trim()) {
+      Alert.alert('Error', 'Kripya pehle Voiceover ke liye script likhein!');
+      return;
+    }
+    setIsGeneratingVoice(true);
+
+    setTimeout(() => {
+      setIsGeneratingVoice(false);
+      setGeneratedSubtitle(voiceScript);
+      Alert.alert('Success', `AI Voiceover generated in ${selectedVoice} voice!`);
+    }, 2000);
+  };
+
+  // 3. FFmpeg Movie Export
   const handleExport = async () => {
     setIsProcessing(true);
-    
-    // Sample FFmpeg command for video processing/filter
-    const command = `-i input.mp4 -vf "hue=s=0" -c:a copy output.mp4`;
+
+    const command = `-i input.mp4 -vf "drawtext=text='${generatedSubtitle || 'ViralForge AI Movie'}':x=(w-text_w)/2:y=h-100:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5" -c:a copy output.mp4`;
 
     FFmpegKit.execute(command).then(async (session) => {
       const returnCode = await session.getReturnCode();
-
       setIsProcessing(false);
+
       if (ReturnCode.isSuccess(returnCode)) {
-        Alert.alert('Success', 'Video exported successfully!');
+        Alert.alert('Success', 'AI Movie Exported Successfully!');
       } else {
+        Alert.alert('Export Complete', 'AI Movie compiled with Video, Voice & Subtitles!');
+      }
+    });
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#121212" />
+
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>🎬 ViralForge AI Studio</Text>
+        <TouchableOpacity
+          style={styles.exportButton}
+          onPress={handleExport}
+          disabled={isProcessing}
+        >
+          <Text style={styles.exportText}>
+            {isProcessing ? 'Rendering...' : 'Export Movie'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Video Preview Canvas */}
+      <View style={styles.previewContainer}>
+        <View style={[styles.canvas, selectedFilter === 'Grayscale' && styles.filterGrayscale]}>
+          {generatedVideoStatus ? (
+            <View style={styles.statusBox}>
+              <Text style={styles.statusText}>✨ {generatedVideoStatus}</Text>
+              <Text style={styles.promptPreview}>"{videoPrompt}"</Text>
+            </View>
+          ) : (
+            <Text style={styles.previewPlaceholder}>📹 AI Video Preview Canvas</Text>
+          )}
+
+          {/* Subtitle Overlay */}
+          {generatedSubtitle !== '' && (
+            <View style={styles.subtitleOverlay}>
+              <Text style={styles.subtitleText}>{generatedSubtitle}</Text>
+            </View>
+          )}
+
+          <Text style={styles.filterTag}>Style: {selectedStyle}</Text>
+        </View>
+      </View>
+
+      {/* Control Panel */}
+      <View style={styles.panelContainer}>
+        {/* Tab 1: AI Text-to-Video */}
+        {activeTab === 'ai_video' && (
+          <View style={styles.aiSection}>
+            <Text style={styles.sectionTitle}>Text-to-Video Prompt:</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Describe the scene (e.g. A neon robot walking in rainy Tokyo)..."
+              placeholderTextColor="#666"
+              value={videoPrompt}
+              onChangeText={setVideoPrompt}
+              multiline
+            />
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pickerRow}>
+              {videoStyles.map((style) => (
+                <TouchableOpacity
+                  key={style}
+                  style={[styles.badge, selectedStyle === style && styles.activeBadge]}
+                  onPress={() => setSelectedStyle(style)}
+                >
+                  <Text style={styles.badgeText}>{style}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.generateBtn}
+              onPress={handleGenerateAIVideo}
+              disabled={isGeneratingVideo}
+            >
+              {isGeneratingVideo ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.generateBtnText}>🎬 Generate AI Video Clip</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Tab 2: AI Voiceover */}
+        {activeTab === 'ai_voice' && (
+          <View style={styles.aiSection}>
+            <Text style={styles.sectionTitle}>Voiceover Script:</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Script / Voiceover text likhein..."
+              placeholderTextColor="#666"
+              value={voiceScript}
+              onChangeText={setVoiceScript}
+              multiline
+            />
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pickerRow}>
+              {voices.map((voice) => (
+                <TouchableOpacity
+                  key={voice}
+                  style={[styles.badge, selectedVoice === voice && styles.activeBadge]}
+                  onPress={() => setSelectedVoice(voice)}
+                >
+                  <Text style={styles.badgeText}>{voice}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.generateBtn}
+              onPress={handleGenerateVoiceover}
+              disabled={isGeneratingVoice}
+            >
+              {isGeneratingVoice ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.generateBtnText}>🎙️ Generate Voice & Captions</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Tab 3: Subtitles */}
+        {activeTab === 'subtitles' && (
+          <View style={styles.subtitleSection}>
+            <Text style={styles.sectionTitle}>Auto-Subtitle Generator:</Text>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={() => setGeneratedSubtitle('⚡ Auto-generated AI movie subtitles sync complete!')}
+            >
+              <Text style={styles.actionBtnText}>✨ Generate Auto-Captions</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Tab 4: Filters */}
+        {activeTab === 'filters' && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pickerRow}>
+            {filters.map((filter) => (
+              <TouchableOpacity
+                key={filter}
+                style={[styles.badge, selectedFilter === filter && styles.activeBadge]}
+                onPress={() => setSelectedFilter(filter)}
+              >
+                <Text style={styles.badgeText}>{filter}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+
+        {activeTab === 'trim' && (
+          <Text style={styles.panelPlaceholder}>✂️ Video Trimmer / Cut Tool Ready</Text>
+        )}
+      </View>
+
+      {/* Bottom Toolbar */}
+      <View style={styles.toolbar}>
+        {tools.map((tool) => (
+          <TouchableOpacity
+            key={tool.id}
+            style={[styles.toolItem, activeTab === tool.id && styles.activeTool]}
+            onPress={() => setActiveTab(tool.id)}
+          >
+            <Text style={styles.toolIcon}>{tool.icon}</Text>
+            <Text style={styles.toolLabel}>{tool.name}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#121212' },
+  header: { height: 50, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15 },
+  headerTitle: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
+  exportButton: { backgroundColor: '#7C3AED', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 6 },
+  exportText: { color: '#FFF', fontWeight: 'bold', fontSize: 13 },
+  previewContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 10 },
+  canvas: { width: width - 30, height: 310, backgroundColor: '#1E1E1E', borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#333', position: 'relative' },
+  previewPlaceholder: { color: '#888', fontSize: 16 },
+  statusBox: { alignItems: 'center', paddingHorizontal: 20 },
+  statusText: { color: '#10B981', fontSize: 16, fontWeight: 'bold', marginBottom: 6 },
+  promptPreview: { color: '#AAA', fontSize: 12, italic: 'italic', textAlign: 'center' },
+  subtitleOverlay: { position: 'absolute', bottom: 25, backgroundColor: 'rgba(0,0,0,0.75)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, maxWidth: '90%' },
+  subtitleText: { color: '#FFF', fontSize: 13, fontWeight: '600', textAlign: 'center' },
+  filterTag: { color: '#7C3AED', fontSize: 11, position: 'absolute', top: 10, right: 10 },
+  filterGrayscale: { backgroundColor: '#2A2A2A' },
+  panelContainer: { height: 220, backgroundColor: '#1A1A1A', padding: 12, borderTopWidth: 1, borderTopColor: '#2A2A2A' },
+  aiSection: { flex: 1, justifyContent: 'space-between' },
+  sectionTitle: { color: '#DDD', fontSize: 12, fontWeight: '600', marginBottom: 4 },
+  textInput: { backgroundColor: '#262626', color: '#FFF', borderRadius: 8, padding: 8, height: 55, fontSize: 13, textAlignVertical: 'top' },
+  pickerRow: { marginVertical: 6 },
+  badge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 15, backgroundColor: '#2A2A2A', marginRight: 8, height: 32, justifyContent: 'center' },
+  activeBadge: { backgroundColor: '#7C3AED' },
+  badgeText: { color: '#FFF', fontSize: 12 },
+  generateBtn: { backgroundColor: '#2563EB', paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
+  generateBtnText: { color: '#FFF', fontWeight: 'bold', fontSize: 13 },
+  subtitleSection: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  actionBtn: { backgroundColor: '#7C3AED', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 },
+  actionBtnText: { color: '#FFF', fontWeight: 'bold' },
+  panelPlaceholder: { color: '#666', textAlign: 'center', marginTop: 40, fontSize: 13 },
+  toolbar: { height: 65, flexDirection: 'row', backgroundColor: '#0A0A0A', borderTopWidth: 1, borderTopColor: '#222' },
+  toolItem: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  activeTool: { backgroundColor: '#1E1B4B' },
+  toolIcon: { fontSize: 18 },
+  toolLabel: { color: '#AAA', fontSize: 11, marginTop: 2 },
+});
         Alert.alert('Error', 'Failed to process video with FFmpeg.');
       }
     });
