@@ -74,9 +74,26 @@
     </div>
 
     <script>
-        const ELEVENLABS_API_KEY = "sk_4af2f3460c1af9c940a074a611c318c65fcebebbf016a3a6";
-        const REPLICATE_API_TOKEN = "r8_KlZm2EXgfg5yYrgvCvDKaz3RcjxCooX0ARjSA";
-        const DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
+        let ELEVENLABS_API_KEY = localStorage.getItem('EL_KEY');
+    let REPLICATE_API_TOKEN = localStorage.getItem('REP_KEY');
+    const DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
+
+    function setKeys() {
+        const repKey = prompt("Enter Replicate API Token (r8_...):", localStorage.getItem('REP_KEY') || '');
+        const elKey = prompt("Enter ElevenLabs API Key:", localStorage.getItem('EL_KEY') || '');
+        if(repKey) localStorage.setItem('REP_KEY', repKey.trim());
+        if(elKey) localStorage.setItem('EL_KEY', elKey.trim());
+        alert('API Keys Saved!');
+    }
+
+
+    // Replicate / ElevenLabs call se pehle key prompt karne ka option
+    function checkKeys() {
+        if (!localStorage.getItem('REP_KEY')) {
+            const userKey = prompt("Enter active Replicate API Token (r8_...):");
+            if (userKey) localStorage.setItem('REP_KEY', userKey.trim());
+        }
+    }
 
         function switchTab(tabId, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
