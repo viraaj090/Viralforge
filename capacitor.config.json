@@ -1,6 +1,5 @@
 {
   "appId": "com.viralforge.app",
   "appName": "ViralForge",
-  "webDir": "dist"
+  "webDir": "."
 }
-
