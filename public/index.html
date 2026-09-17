@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE_KEY"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ViralForge AI Studio</title>
     <style>
@@ -118,20 +119,36 @@
 
         // 100% Free - Bina kisi Key ke Android Native Speech API Engine
         function generateVoice() {
-            const script = document.getElementById('voiceScript').value;
-            if(!script) return alert('Script text likhein!');
+  const script = document.getElementById('voiceScript').value;
+  if(!script) return alert('Script text likhein!');
 
-            let subtitleOverlay = document.getElementById('subtitleOverlay');
-            if(!subtitleOverlay) {
-                const canvas = document.getElementById('canvas');
-                subtitleOverlay = document.createElement('div');
-                subtitleOverlay.id = 'subtitleOverlay';
-                subtitleOverlay.className = 'subtitle-box';
-                canvas.appendChild(subtitleOverlay);
-            }
+  let subtitleOverlay = document.getElementById('subtitleOverlay');
+  if(!subtitleOverlay) {
+    const canvas = document.getElementById('canvas');
+    subtitleOverlay = document.createElement('div');
+    subtitleOverlay.id = 'subtitleOverlay';
+    subtitleOverlay.className = 'subtitle-box';
+    canvas.appendChild(subtitleOverlay);
+  }
+  subtitleOverlay.innerText = script;
+  subtitleOverlay.style.display = 'block';
 
-            subtitleOverlay.innerText = script;
-            subtitleOverlay.style.display = 'block';
+  // Native TTS check with Fallback Engine
+  if ('speechSynthesis' in window && window.speechSynthesis.getVoices().length > 0) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(script);
+    utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
+  } else if (typeof responsiveVoice !== "undefined") {
+    responsiveVoice.speak(script, "Hindi Female");
+  } else {
+    // Google TTS Audio Fallback
+    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(script)}&tl=hi&client=tw-ob`;
+    const audio = new Audio(audioUrl);
+    audio.play().catch(() => alert('Audio Playback Error'));
+  }
+}
 
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
