@@ -2,7 +2,12 @@ name: Build APK
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ a{
+  "appId": "com.viralforge.app",
+  "appName": "ViralForge",
+  "webDir": "public"
+}
+"main", "master" ]
   workflow_dispatch:
 
 jobs:
